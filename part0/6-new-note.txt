@@ -1,0 +1,7 @@
+note over browser
+A new note is added to the page
+via the DOM API and the notes
+rendered to display.
+end note
+browser->server: HTTP POST /new_note_spa
+server-->browser: JSON response {"message":"note created"}
