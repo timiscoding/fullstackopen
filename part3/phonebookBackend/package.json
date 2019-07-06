@@ -1,0 +1,21 @@
+{
+  "name": "phonebookBackend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Timothy Tsui <timiscoding@gmail.com> (https://github.com/timiscoding)",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "1.19.1"
+  },
+  "dependencies": {
+    "body-parser": "1.19.0",
+    "morgan": "1.9.1"
+  }
+}
