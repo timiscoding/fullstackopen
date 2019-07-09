@@ -1,8 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const Person = require('./models/person');
 
 const app = express();
+app.use(express.static('build'));
 app.use(bodyParser.json());
 morgan.token('body', (req, res) => {
   return JSON.stringify(req.body);
@@ -34,7 +37,9 @@ let persons = [
 
 app.route('/api/persons')
   .get((req, res) => {
-    res.json(persons);
+    Person.find({}).then(persons => {
+      res.json(persons.map(person => person.toJSON()));
+    });
   })
   .post((req, res) => {
     const { name, number } = req.body;
@@ -43,19 +48,25 @@ app.route('/api/persons')
         error: "name and number must not be blank"
       });
     }
-    const personExists = persons.find(p => p.name === name);
-    if (personExists) {
-      return res.status(400).json({
-        error: "name must be unique"
+
+    Person.find({ name }).then(result => {
+      // console.log('found person', result);
+      const personExists = result.length > 0;
+      if (personExists) {
+        return res.status(400).json({
+          error: "name must be unique"
+        });
+      }
+
+      const person = new Person({
+        name,
+        number,
       });
-    }
-    const person = {
-      name,
-      number,
-      id: persons.length + Math.floor(Math.random() * 1000)
-    };
-    persons = persons.concat(person);
-    res.status(201).json(person);
+
+      person.save().then(savedPerson => {
+        res.status(201).json(savedPerson.toJSON());
+      });
+    });
   });
 
 app.get('/info', (req, res) => {
@@ -81,5 +92,5 @@ app.route('/api/persons/:id')
     res.status(204).end();
   });
 
-const PORT = 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => console.log('Server started on port', PORT));

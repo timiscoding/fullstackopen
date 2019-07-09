@@ -1,2 +1,4 @@
 **/course-code/
 **/node_modules/
+**/.env
+**/build/

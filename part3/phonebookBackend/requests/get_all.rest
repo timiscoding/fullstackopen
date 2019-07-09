@@ -1,22 +1,24 @@
-GET http://localhost:3001/api/persons HTTP/1.1
+@baseUrl = http://localhost:3001
+# @baseUrl = https://afternoon-coast-42082.herokuapp.com
+GET {{baseUrl}}/api/persons HTTP/1.1
 
 ###
 
-GET http://localhost:3001/info HTTP/1.1
+GET {{baseUrl}}/info HTTP/1.1
 
 ###
 
-GET http://localhost:3001/api/persons/2 HTTP/1.1
+GET {{baseUrl}}/api/persons/2 HTTP/1.1
 
 ###
 
-GET http://localhost:3001/api/persons/100 HTTP/1.1
+GET {{baseUrl}}/api/persons/100 HTTP/1.1
 
 ###
-DELETE http://localhost:3001/api/persons/1 HTTP/1.1
+DELETE {{baseUrl}}/api/persons/1 HTTP/1.1
 
 ###
-POST http://localhost:3001/api/persons HTTP/1.1
+POST {{baseUrl}}/api/persons HTTP/1.1
 content-type: application/json
 
 {
