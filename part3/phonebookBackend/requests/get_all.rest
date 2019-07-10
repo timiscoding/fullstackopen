@@ -8,14 +8,15 @@ GET {{baseUrl}}/info HTTP/1.1
 
 ###
 
-GET {{baseUrl}}/api/persons/2 HTTP/1.1
+GET {{baseUrl}}/api/persons/5d2439ebb1fb840fde58f1ff HTTP/1.1
 
 ###
 
 GET {{baseUrl}}/api/persons/100 HTTP/1.1
 
 ###
-DELETE {{baseUrl}}/api/persons/1 HTTP/1.1
+@deleteId=5d25a7b4293b99219057133c
+DELETE {{baseUrl}}/api/persons/{{deleteId}} HTTP/1.1
 
 ###
 POST {{baseUrl}}/api/persons HTTP/1.1
