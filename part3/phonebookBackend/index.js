@@ -7,9 +7,9 @@ const Person = require('./models/person');
 const app = express();
 app.use(express.static('build'));
 app.use(bodyParser.json());
-morgan.token('body', (req, res) => {
+morgan.token('body', (req) => {
   return JSON.stringify(req.body);
-})
+});
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 
 app.route('/api/persons')
@@ -23,7 +23,7 @@ app.route('/api/persons')
     if (!name || !number) {
       return next({
         status: 400,
-        message: "name and number must not be blank"
+        message: 'name and number must not be blank'
       });
     }
 
@@ -45,7 +45,7 @@ app.get('/info', (req, res) => {
       res.send(`
         <p>Phonebook has info for ${personLength} people</p>
         <p>${new Date()}</p>`);
-      });
+    });
 });
 
 app.route('/api/persons/:id')

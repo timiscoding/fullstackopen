@@ -23,6 +23,6 @@ POST {{baseUrl}}/api/persons HTTP/1.1
 content-type: application/json
 
 {
-  "name": "tim",
-  "number": "1038-43804"
+  "name": "riker",
+  "number": "123-1234"
 }

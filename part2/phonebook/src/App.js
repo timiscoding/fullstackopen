@@ -59,6 +59,9 @@ const App = () => {
           setNewName('');
           setNewNumber('');
           setMessage({ text: `Added ${newPerson.name} to phonebook`, type: 'success' });
+        })
+        .catch(error => {
+          setMessage({ text: error.response.data.error, type: 'error' });
         });
     }
   }
