@@ -1,0 +1,25 @@
+{
+  "name": "bloglist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "watch": "nodemon index.js",
+    "test": "jest --verbose"
+  },
+  "keywords": [],
+  "author": "Timothy Tsui <timiscoding@gmail.com> (https://github.com/timiscoding)",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "24.8.0",
+    "lodash": "4.17.14",
+    "nodemon": "1.19.1"
+  },
+  "dependencies": {
+    "body-parser": "1.19.0",
+    "cors": "2.8.5",
+    "dotenv": "8.0.0",
+    "express": "4.17.1",
+    "mongoose": "5.6.4"
+  }
+}
