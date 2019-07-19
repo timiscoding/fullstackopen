@@ -4,16 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "nodemon index.js",
-    "test": "jest --verbose"
+    "start": "cross-env NODE_ENV=production node index.js",
+    "watch": "cross-env NODE_ENV=development nodemon index.js",
+    "test": "cross-env NODE_ENV=test jest --verbose",
+    "test:debug": "cross-env NODE_ENV=test node --inspect-brk node_modules/.bin/jest tests/blog_api.test.js --runInBand"
   },
   "keywords": [],
   "author": "Timothy Tsui <timiscoding@gmail.com> (https://github.com/timiscoding)",
   "license": "MIT",
   "devDependencies": {
+    "cross-env": "5.2.0",
     "jest": "24.8.0",
     "lodash": "4.17.14",
-    "nodemon": "1.19.1"
+    "nodemon": "1.19.1",
+    "supertest": "4.0.2"
   },
   "dependencies": {
     "body-parser": "1.19.0",
