@@ -3,13 +3,32 @@ const mongoose = require('mongoose');
 const app = require('../app');
 const helper = require('./test_helper.js');
 const Blog = require('../models/blog');
+const User = require('../models/user');
+const { makeToken } = require('../controllers/login');
 
 const api = supertest(app);
+
+let creator, nonCreator;
+
+beforeAll(async () => {
+  await User.deleteMany();
+  const users = helper.initialUsers.map(user => new User(user));
+  const savedUsers = [];
+  for (let user of users) {
+    const savedUser = await user.save();
+    savedUser.token = makeToken(savedUser);
+    savedUsers.push(savedUser);
+  }
+  [creator, nonCreator] = savedUsers;
+});
 
 beforeEach(async () => {
   await Blog.deleteMany({});
 
-  const blogObjects = helper.initialBlogs.map(blog => new Blog(blog));
+  const blogObjects = helper.initialBlogs.map(blog => {
+    blog.user = creator._id;
+    return new Blog(blog);
+  });
   const promiseArr = blogObjects.map(blog => blog.save());
   await Promise.all(promiseArr);
 });
@@ -84,6 +103,7 @@ describe('addition of a blog', () => {
 
     await api
       .post('/api/blogs')
+      .set('authorization', `bearer ${creator.token}`)
       .send(newBlog)
       .expect(201);
 
@@ -102,6 +122,7 @@ describe('addition of a blog', () => {
 
     const response = await api
       .post('/api/blogs')
+      .set('authorization', `bearer ${creator.token}`)
       .send(blogNoLikes)
       .expect(201);
 
@@ -123,6 +144,19 @@ describe('addition of a blog', () => {
     const blogsAtEnd = await helper.blogsInDb();
     expect(blogsAtEnd.length).toBe(helper.initialBlogs.length);
   });
+
+  test('fails with status code 400 when not logged in', async () => {
+    const newBlog = {
+      title: 'hyzer crimp bucket',
+      author: 'brian shaw',
+      url: 'http://www.msn.com'
+    };
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400);
+  });
 });
 
 describe('deletion of a blog', () => {
@@ -132,10 +166,30 @@ describe('deletion of a blog', () => {
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('authorization', `bearer ${creator.token}`)
       .expect(204);
 
     const blogsAtEnd = await helper.blogsInDb();
     expect(blogsAtEnd.length).toBe(helper.initialBlogs.length - 1);
+  });
+
+  test('fails with status code 400 when not logged in', async () => {
+    const blogs = await helper.blogsInDb();
+    const blogToDelete = blogs[0];
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(400);
+  });
+
+  test('fails with status code 401 when logged in user did not create blog', async () => {
+    const blogs = await helper.blogsInDb();
+    const blogToDelete = blogs[0];
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('authorization', `bearer ${nonCreator.token}`)
+      .expect(401);
   });
 });
 

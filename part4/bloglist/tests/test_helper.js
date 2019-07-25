@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Blog = require('../models/blog');
+const bcrypt = require('bcrypt');
 
 const initialBlogs = [
   {
@@ -49,4 +50,19 @@ const nonExistentBlogId = async () => {
   return new mongoose.Types.ObjectId;
 }
 
-module.exports = { initialBlogs, blogsInDb, nonExistentBlogId };
+const initialUsers = [
+  {
+    username: 'root',
+    name: 'root',
+    password: 'root',
+  },
+  {
+    username: 'someguy',
+    name: 'some guy',
+    password: 'someguy',
+  },
+];
+
+initialUsers.forEach(user => user.passwordHash = bcrypt.hashSync(user.password, 10));
+
+module.exports = { initialBlogs, blogsInDb, nonExistentBlogId, initialUsers };
