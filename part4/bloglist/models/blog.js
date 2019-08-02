@@ -23,7 +23,13 @@ const blogSchema = mongoose.Schema({
 blogSchema.set('toJSON', {
   transform: (doc, ret) => {
     ret.id = ret._id.toString();
-    ret.user = ret.user.toString();
+    if (!doc.user) {
+      ret.user = {};
+    } else {
+      // when .populate('user') used, user will be an object
+      // when populate unused, user will be string id
+      ret.user = doc.user.toJSON();
+    }
     delete ret._id;
     delete ret.__v;
   }

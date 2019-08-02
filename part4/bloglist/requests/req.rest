@@ -2,6 +2,24 @@
 
 GET {{baseUrl}}/api/blogs HTTP/1.1
 
+### get specific blog
+
+GET {{baseUrl}}/api/blogs/5d424310a6d34f17842fab64 HTTP/1.1
+
+### update blog
+
+PUT {{baseUrl}}/api/blogs/5d424310a6d34f17842fab64 HTTP/1.1
+Content-Type: application/json
+
+{
+  "likes": 100,
+  "title": "toggleable",
+  "author": "works",
+  "url": "yay.com",
+  "user": "5d367f2b2005ec2259122f69",
+  "id": "5d424310a6d34f17842fab64"
+}
+
 ### new blog
 
 POST {{baseUrl}}/api/blogs HTTP/1.1

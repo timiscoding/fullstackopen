@@ -19,10 +19,9 @@ loginRouter.post('/', async (req, res, next) => {
     const payload = {
       id: user._id.toString(),
       username: user.username,
-      name: user.name,
     };
 
-    res.json({ token: makeToken(payload) });
+    res.json({ token: makeToken(payload), name: user.name, username: user.username });
   } catch (err) {
     next(err);
   }
