@@ -33,7 +33,7 @@ const Blog = ({ blog, onLike, onDelete, canDelete }) => {
 
   return (
     <div style={style}>
-      <div onClick={toggleExpand}>
+      <div onClick={toggleExpand} data-testid="blog-body">
         {body}
       </div>
     </div>
