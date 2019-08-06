@@ -1,28 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const LoginForm = ({ onSubmit, values: { username, password }, onFieldChange }) => {
+const LoginForm = ({ onSubmit, fields: { username, password } }) => {
   return (
     <form onSubmit={onSubmit}>
       <div>
         <label htmlFor="username">Username</label>
         <input
-          type="text"
-          name="username"
           id="username"
-          onChange={onFieldChange}
-          value={username}
+          {...username}
         />
       </div>
 
       <div>
         <label htmlFor="password">Password</label>
         <input
-          type="password"
-          name="password"
           id="password"
-          onChange={onFieldChange}
-          value={password}
+          {...password}
         />
       </div>
       <button type="submit">login</button>
@@ -32,11 +26,10 @@ const LoginForm = ({ onSubmit, values: { username, password }, onFieldChange }) 
 
 LoginForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
-  onFieldChange: PropTypes.func.isRequired,
-  values: PropTypes.shape({
-    username: PropTypes.string.isRequired,
-    password: PropTypes.string.isRequired,
-  })
+  fields: PropTypes.shape({
+    username: PropTypes.object.isRequired,
+    password: PropTypes.object.isRequired,
+  }),
 };
 
 export default LoginForm;

@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const BlogForm = ({ onSubmit, fields, onFieldChange }) => {
-  const { title, author, url } = fields;
+const BlogForm = ({ onSubmit, fields: { title, author, url } }) => {
   return (
     <div>
       <h2>Create new</h2>
@@ -10,15 +9,15 @@ const BlogForm = ({ onSubmit, fields, onFieldChange }) => {
       <form onSubmit={onSubmit}>
         <div>
           <label htmlFor="title">title</label>
-          <input type="text" name="title" id="title" onChange={onFieldChange} value={title} />
+          <input id="title" {...title} />
         </div>
         <div>
           <label htmlFor="author">author</label>
-          <input type="text" name="author" id="author" onChange={onFieldChange} value={author} />
+          <input id="author" {...author} />
         </div>
         <div>
           <label htmlFor="url">url</label>
-          <input type="text" name="url" id="url" onChange={onFieldChange} value={url} />
+          <input id="url" {...url} />
         </div>
         <button type="submit">Create</button>
       </form>
@@ -28,11 +27,10 @@ const BlogForm = ({ onSubmit, fields, onFieldChange }) => {
 
 BlogForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
-  onFieldChange: PropTypes.func.isRequired,
   fields: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    author: PropTypes.string.isRequired,
-    url: PropTypes.string.isRequired,
+    title: PropTypes.object.isRequired,
+    author: PropTypes.object.isRequired,
+    url: PropTypes.object.isRequired,
   }),
 };
 

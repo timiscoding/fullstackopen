@@ -1,9 +1,9 @@
 {
-  "name": "bloglist-frontend",
+  "name": "customhooks",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "0.19.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1"
@@ -13,12 +13,12 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "eslint": "eslint .",
-    "server": "cd ../../part4/bloglist && npm start"
+    "server": "json-server -p 3005 db.json"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
+  "proxy": "http://localhost:3005",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -31,12 +31,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:3003",
   "devDependencies": {
-    "@testing-library/jest-dom": "4.0.0",
-    "@testing-library/react": "8.0.7",
-    "eslint-plugin-jest": "22.14.1",
-    "eslint-plugin-react": "7.14.3",
-    "prop-types": "15.7.2"
+    "json-server": "^0.15.0"
   }
 }
