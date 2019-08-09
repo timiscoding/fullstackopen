@@ -6,23 +6,13 @@ import Notification from './components/Notification';
 import Toggleable from './components/Toggleable';
 import loginService from './services/login';
 import blogsService from './services/blogs';
-import { useField } from './hooks';
 
 const loggedInUserKey ='loggedInBlogappUser';
 
 function App() {
   const [blogs, setBlogs] = useState([]);
-  const loginFields = {
-    username: useField('text'),
-    password: useField('password'),
-  };
   const [user, setUser] = useState(null);
-  const blogFields = {
-    title: useField('text'),
-    author: useField('text'),
-    url: useField('text'),
-  };
-  const [message, setMessage] = useState(null);
+  const [notification, setNotification] = useState({ message: null });
   const blogFormRef = React.createRef();
 
   const addUserId = user => {
@@ -49,19 +39,12 @@ function App() {
   useEffect(getBlogs, []);
   useEffect(checkLogin, []);
 
-  const handleLogin = async (event) => {
+  const handleLogin = async (credentials) => {
     try {
-      event.preventDefault();
-      const {
-        username: { value: username },
-        password: { value: password }
-      } = loginFields;
-      const user = await loginService.login({ username, password });
+      const user = await loginService.login(credentials);
       setUser(addUserId(user));
       window.localStorage.setItem(loggedInUserKey, JSON.stringify(user));
       blogsService.setToken(user.token);
-      loginFields.username.reset();
-      loginFields.password.reset();
     } catch (err) {
       showErrorMessage(err.message);
     }
@@ -72,23 +55,15 @@ function App() {
     setUser(null);
   };
 
-  const createBlog = async (event) => {
-    event.preventDefault();
-    blogFormRef.current.toggleVisible();
+  const createBlog = async (blog) => {
     try {
-      const {
-        title: { value: title },
-        author: { value: author },
-        url: { value: url },
-      } = blogFields;
-      const savedBlog = await blogsService.addBlog({ title, author, url });
-      blogFields.title.reset();
-      blogFields.author.reset();
-      blogFields.url.reset();
+      const savedBlog = await blogsService.addBlog(blog);
+      blogFormRef.current.toggleVisible();
       setBlogs(blogs.concat(savedBlog));
       showSuccessMessage(`a new blog ${savedBlog.title} by ${savedBlog.author} added`);
     } catch (err) {
       showErrorMessage(err.message);
+      throw Error(err);
     }
   };
 
@@ -101,8 +76,8 @@ function App() {
   };
 
   const showMessage = (message, type) => {
-    setMessage({ text: message, type });
-    setTimeout(() => setMessage(null), 5000);
+    setNotification({ message, type });
+    setTimeout(() => setNotification({ message: null }), 5000);
   };
 
   const addLike = async ({ author, title, url, likes, user, id }) => {
@@ -131,10 +106,9 @@ function App() {
     return (
       <div>
         <h2>Login to the application</h2>
-        {message && <Notification text={message.text} type={message.type} />}
+        <Notification notification={notification} />
         <LoginForm
-          onSubmit={handleLogin}
-          fields={loginFields}
+          handleLogin={handleLogin}
         />
       </div>);
   }
@@ -142,10 +116,10 @@ function App() {
   return (
     <div>
       <h2>Blogs</h2>
-      {message && <Notification text={message.text} type={message.type} />}
+      <Notification notification={notification} />
       <p>{user.name} logged in <button onClick={handleLogout}>Log out</button></p>
       <Toggleable buttonLabel="New blog" ref={blogFormRef}>
-        <BlogForm onSubmit={createBlog} fields={blogFields} />
+        <BlogForm createBlog={createBlog} />
       </Toggleable>
       {blogs
         .sort((a,b) => a.likes-b.likes)

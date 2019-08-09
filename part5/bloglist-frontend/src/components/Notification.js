@@ -2,17 +2,21 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import './Notification.css';
 
-const Notification = ({ text, type='success' }) => {
+const Notification = ({ notification : { type, message } }) => {
+  if (message === null) return null;
+
   return (
     <div className={`notification ${type}`}>
-      {text}
+      {message}
     </div>
   );
 };
 
 Notification.propTypes = {
-  text: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['success', 'error']),
+  notification: PropTypes.shape({
+    type: PropTypes.oneOf(['success', 'error']),
+    message: PropTypes.string.isRequired,
+  }),
 };
 
 export default Notification;

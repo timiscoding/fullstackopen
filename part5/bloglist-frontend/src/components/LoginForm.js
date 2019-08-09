@@ -1,9 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useField } from '../hooks';
 
-const LoginForm = ({ onSubmit, fields: { username, password } }) => {
+const LoginForm = ({ handleLogin }) => {
+  const [ username ] = useField('text');
+  const [ password ] = useField('password');
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    handleLogin({
+      username: username.value,
+      password: password.value,
+    });
+  };
+
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit}>
       <div>
         <label htmlFor="username">Username</label>
         <input
@@ -25,11 +37,7 @@ const LoginForm = ({ onSubmit, fields: { username, password } }) => {
 };
 
 LoginForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-  fields: PropTypes.shape({
-    username: PropTypes.object.isRequired,
-    password: PropTypes.object.isRequired,
-  }),
+  handleLogin: PropTypes.func.isRequired,
 };
 
 export default LoginForm;

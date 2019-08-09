@@ -11,17 +11,16 @@ export const useField = (type) => {
     setValue('');
   };
 
-  const props = {
-    type,
-    value,
-    onChange,
-  };
-
-  // make this prop non-enumerable so that we can spread the props without getting
+  // make reset prop separate so that we can spread the props without getting
   // the warning about using non standard HTML attributes for input elements
-  Object.defineProperty(props, 'reset', { value: reset });
-
-  return props;
+  return [
+    {
+      type,
+      value,
+      onChange,
+    },
+    reset
+  ];
 };
 
 

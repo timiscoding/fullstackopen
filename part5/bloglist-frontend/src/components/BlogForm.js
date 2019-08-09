@@ -1,12 +1,32 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useField } from '../hooks';
 
-const BlogForm = ({ onSubmit, fields: { title, author, url } }) => {
+const BlogForm = ({ createBlog }) => {
+  const [ title, titleReset ] = useField('text');
+  const [ author, authorReset ] = useField('text');
+  const [ url, urlReset ] = useField('text');
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      await createBlog({
+        title: title.value,
+        author: author.value,
+        url: author.value
+      });
+      titleReset();
+      authorReset();
+      urlReset();
+    // eslint-disable-next-line no-empty
+    } catch (err) {}
+  };
+
   return (
     <div>
       <h2>Create new</h2>
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="title">title</label>
           <input id="title" {...title} />
@@ -26,12 +46,7 @@ const BlogForm = ({ onSubmit, fields: { title, author, url } }) => {
 };
 
 BlogForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-  fields: PropTypes.shape({
-    title: PropTypes.object.isRequired,
-    author: PropTypes.object.isRequired,
-    url: PropTypes.object.isRequired,
-  }),
+  createBlog: PropTypes.func.isRequired,
 };
 
 export default BlogForm;
