@@ -1,0 +1,82 @@
+@baseUrl=http://localhost:3003
+
+GET {{baseUrl}}/api/blogs HTTP/1.1
+
+### get specific blog
+
+@aBlog=5d3e8f8b46ea150ba3356ed5
+GET {{baseUrl}}/api/blogs/{{aBlog}} HTTP/1.1
+
+### update blog
+
+PUT {{baseUrl}}/api/blogs/{{aBlog}} HTTP/1.1
+Content-Type: application/json
+
+{
+  "likes": 10
+}
+
+### new blog
+
+POST {{baseUrl}}/api/blogs HTTP/1.1
+Content-Type: application/json
+authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkMzY3ZjJiMjAwNWVjMjI1OTEyMmY2OSIsInVzZXJuYW1lIjoidGltIiwibmFtZSI6InRpbSIsImlhdCI6MTU2Mzg3MjI4MX0.TJM4eFCKZX4xTkcsrsI7B6UodeGZWqmDGbSamhp7taY
+
+{
+  "title": "Holden Caulfield",
+  "author": "Salinger",
+  "url": "http://pencey.com",
+  "likes": 5
+}
+
+### delete blog
+@blogToDelete=5d36d00d58afc142ffe0757e
+DELETE {{baseUrl}}/api/blogs/{{blogToDelete}} HTTP/1.1
+authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkMzY3ZjJiMjAwNWVjMjI1OTEyMmY2OSIsInVzZXJuYW1lIjoidGltIiwibmFtZSI6InRpbSIsImlhdCI6MTU2Mzg3MjI4MX0.TJM4eFCKZX4xTkcsrsI7B6UodeGZWqmDGbSamhp7taY
+
+### add comment to blog
+
+@blogToComment=5d3e8f8b46ea150ba3356ed5
+
+POST {{baseUrl}}/api/blogs/{{blogToComment}}/comments HTTP/1.1
+Content-Type: application/json
+
+{
+  "comment": "me too"
+}
+
+### all users
+GET {{baseUrl}}/api/users HTTP/1.1
+
+### get specific user
+@aUser=5d367f2b2005ec2259122f69
+GET {{baseUrl}}/api/users/{{aUser}} HTTP/1.1
+
+### new user
+POST {{baseUrl}}/api/users HTTP/1.1
+content-type: application/json
+
+{
+  "username": "leelu",
+  "name": "leelu",
+  "password": "leelu"
+}
+
+### new user, insufficient password length
+POST {{baseUrl}}/api/users HTTP/1.1
+content-type: application/json
+
+{
+  "username": "elgar",
+  "name": "eddy",
+  "password": "da"
+}
+
+### login
+POST {{baseUrl}}/api/login HTTP/1.1
+content-type: application/json
+
+{
+  "username": "tim",
+  "password": "tim"
+}
