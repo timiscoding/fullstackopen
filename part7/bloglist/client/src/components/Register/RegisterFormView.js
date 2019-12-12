@@ -1,17 +1,49 @@
 import React, { useRef } from "react";
 import PropTypes from "prop-types";
-import { useFormState } from "../../hooks";
+import styled from "styled-components";
+import { useFormState, useInputErrorHeights } from "../../hooks";
 import { required, passwordMatch, minLength } from "../../hooks/utils";
+import Input, { Fieldset, InputDiv, InputError, Label } from "../Input";
+import PrimaryButton from "../PrimaryButton";
+import Button from "../Button";
+import { ReactComponent as RegisterIcon } from "../../icons/add-user-button.svg";
+
+const ButtonDiv = styled.div`
+  & button:first-child {
+    margin-right: 20px;
+  }
+`;
+
+const StyledRegisterIcon = styled(RegisterIcon)`
+  height: 1.25em;
+  width: 1.25em;
+  fill: white;
+  vertical-align: middle;
+  margin-right: 5px;
+  fill: white;
+`;
+
+const StyledInput = styled(Input).attrs({
+  autoComplete: "off"
+})``;
 
 const RegisterFormView = ({ onSubmit, pending }) => {
   const formRef = useRef();
-  const [form, { text, password }] = useFormState(formRef);
+  const errorRefs = {
+    name: useRef(),
+    username: useRef(),
+    password: useRef(),
+    confirmPassword: useRef()
+  };
+  const [
+    { values, validity, errors, submit, clear },
+    { text, password }
+  ] = useFormState(formRef);
+  const errorHeights = useInputErrorHeights(errorRefs, errors);
 
   const handleSubmit = event => {
     event.preventDefault();
-    const {
-      values: { name, username, password }
-    } = form;
+    const { name, username, password } = values;
     onSubmit({
       name,
       username,
@@ -19,45 +51,74 @@ const RegisterFormView = ({ onSubmit, pending }) => {
     });
   };
 
-  const { errors } = form;
+  const handleClear = () => {
+    clear();
+    formRef.current.elements.name.focus();
+  };
 
   return (
     <div>
       <h2>Register</h2>
       <form ref={formRef} onSubmit={handleSubmit}>
-        <fieldset disabled={pending}>
-          <div>
-            <label htmlFor="name">Name</label>
-            {errors.name ? <div>{errors.name}</div> : null}
-            <input id="name" {...text("name", required())} />
-          </div>
-          <div>
-            <label htmlFor="username">Username</label>
-            {errors.username ? <div>{errors.username}</div> : null}
-            <input id="username" {...text("username", required())} />
-          </div>
-          <div>
-            <label htmlFor="password">Password</label>
-            {errors.password ? <div>{errors.password}</div> : null}
-            <input id="password" {...password("password", minLength(3))} />
-          </div>
-          <div>
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            {errors.confirmPassword ? (
-              <div>{errors.confirmPassword}</div>
-            ) : null}
-            <input
+        <Fieldset disabled={pending}>
+          <InputDiv>
+            <Label htmlFor="name">Name</Label>
+            <StyledInput
+              id="name"
+              {...text("name", required())}
+              valid={validity.name}
+              autoFocus
+            />
+            <InputError ref={errorRefs.name} height={errorHeights.name}>
+              {errors.name}
+            </InputError>
+          </InputDiv>
+          <InputDiv>
+            <Label htmlFor="username">Username</Label>
+            <StyledInput
+              id="username"
+              {...text("username", required())}
+              valid={validity.username}
+            />
+            <InputError ref={errorRefs.username} height={errorHeights.username}>
+              {errors.username}
+            </InputError>
+          </InputDiv>
+          <InputDiv>
+            <Label htmlFor="password">Password</Label>
+            <StyledInput
+              id="password"
+              {...password("password", minLength(3))}
+              valid={validity.password}
+            />
+            <InputError ref={errorRefs.password} height={errorHeights.password}>
+              {errors.password}
+            </InputError>
+          </InputDiv>
+          <InputDiv>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <StyledInput
               id="confirmPassword"
               {...password("confirmPassword", passwordMatch)}
+              valid={validity.confirmPassword}
             />
-          </div>
-          <button type="submit" onClick={form.submit}>
-            {pending ? "Submitting..." : "Submit"}
-          </button>
-          <button type="reset" onClick={form.clear}>
-            Reset
-          </button>
-        </fieldset>
+            <InputError
+              ref={errorRefs.confirmPassword}
+              height={errorHeights.confirmPassword}
+            >
+              {errors.confirmPassword}
+            </InputError>
+          </InputDiv>
+          <ButtonDiv>
+            <PrimaryButton type="submit" onClick={submit}>
+              <StyledRegisterIcon />
+              {pending ? "Submitting..." : "Submit"}
+            </PrimaryButton>
+            <Button type="reset" onClick={handleClear}>
+              Clear
+            </Button>
+          </ButtonDiv>
+        </Fieldset>
       </form>
     </div>
   );

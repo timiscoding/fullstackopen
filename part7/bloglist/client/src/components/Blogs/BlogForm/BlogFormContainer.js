@@ -1,11 +1,25 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import { withRouter } from "react-router";
 import { addBlog } from "../../../actions";
 import BlogForm from "./BlogFormView";
 
-const BlogFormContainer = ({ blogAdded, addBlog, pending }) => (
-  <BlogForm blogAdded={blogAdded} addBlog={addBlog} pending={pending} />
+const BlogFormContainer = ({
+  blogAdded,
+  addBlog,
+  pending,
+  onResize,
+  toggleableOpen,
+  history
+}) => (
+  <BlogForm
+    blogAdded={blogAdded}
+    addBlog={blog => addBlog(blog, history)}
+    pending={pending}
+    onResize={onResize}
+    toggleableOpen={toggleableOpen}
+  />
 );
 
 BlogForm.propTypes = {
@@ -16,7 +30,4 @@ BlogForm.propTypes = {
   })
 };
 
-export default connect(
-  null,
-  { addBlog }
-)(BlogFormContainer);
+export default withRouter(connect(null, { addBlog })(BlogFormContainer));

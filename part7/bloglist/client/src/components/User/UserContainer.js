@@ -6,6 +6,7 @@ import * as actionTypes from "../../constants/actionTypes";
 import { getError } from "../../reducers";
 import Error from "../Error";
 import User from "./UserView";
+import Loading from "../Loading";
 
 const UserContainer = ({ user, fetchUser, match, isFetchingUser, error }) => {
   useEffect(() => {
@@ -15,7 +16,12 @@ const UserContainer = ({ user, fetchUser, match, isFetchingUser, error }) => {
   }, [user, fetchUser, match.params.id]);
 
   if (error) return <Error message={error} />;
-  if (!user || isFetchingUser) return <p>Loading...</p>;
+  if (!user || isFetchingUser)
+    return (
+      <Loading pending={isFetchingUser}>
+        <h2>Loading user</h2>
+      </Loading>
+    );
 
   return <User user={user} />;
 };

@@ -10,7 +10,6 @@ export const setNotification = (
 
   if (autoClose) {
     cancelId = setTimeout(() => dispatch(clearNotification()), 5000);
-    console.log("cancelId", cancelId);
   }
   dispatch({
     type: "SET_NOTIFICATION",

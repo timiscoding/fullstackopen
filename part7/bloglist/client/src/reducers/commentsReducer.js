@@ -1,23 +1,22 @@
+import produce from "immer";
 import * as actionTypes from "../constants/actionTypes";
 
 const setComments = (state, action) => {
-  const { comments } = action.response.entities;
+  // data may be supplied from fetching blogList (namespaced under 'items')
+  // or fetching single blog so no namespacing
+  const { comments } =
+    action.response.entities || action.response.items.entities;
   return {
     ...state,
     ...comments
   };
 };
 
-const addComment = (state, action) => {
+const addComment = produce((state, action) => {
   const { response } = action;
-  const { id, body } = response;
-  return {
-    ...state,
-    [id]: {
-      body
-    }
-  };
-};
+  const { id, body, createdAt } = response;
+  state[id] = { body, createdAt };
+});
 
 const commentsReducer = (state = {}, action) => {
   switch (action.type) {
@@ -32,6 +31,8 @@ const commentsReducer = (state = {}, action) => {
 };
 
 export default commentsReducer;
+
+/**** SELECTORS ****/
 
 export const getComments = (state, ids) => {
   return Array.isArray(ids) ? ids.map(id => state[id]) : [];

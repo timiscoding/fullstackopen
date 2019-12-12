@@ -1,9 +1,8 @@
 import Axios from "axios";
 import { batch } from "react-redux";
-import { normalize } from "normalizr";
 import { getActionName } from "../reducers/utils";
 
-export default ({ getState }) => next => async action => {
+export default ({ getState, dispatch }) => next => async action => {
   if (action.HTTP_ACTION === undefined) return next(action);
 
   const {
@@ -23,6 +22,7 @@ export default ({ getState }) => next => async action => {
   if (currentUser && currentUser.token) {
     headers.authorization = `bearer ${currentUser.token}`;
   }
+
   next({ type, notify });
   try {
     const response = await Axios({
@@ -32,18 +32,17 @@ export default ({ getState }) => next => async action => {
       url,
       data: payload
     });
-    const transformResp = schema
-      ? normalize(response.data, schema)
-      : response.data;
     let retVal;
     batch(() => {
       retVal = next({
-        type: `${actionName}_SUCCESS`,
-        data, // data sent in action creator
-        response: transformResp, // data returned by server
-        notify
+        TRANSFORM_ACTION: {
+          type: `${actionName}_SUCCESS`,
+          data,
+          response: response.data,
+          schema
+        }
       });
-      onSuccess && next(onSuccess(data, transformResp));
+      onSuccess && next(onSuccess()); // OnSuccess(data, transformResp) UNUSED?
     });
     return retVal;
   } catch (err) {
@@ -62,7 +61,7 @@ export default ({ getState }) => next => async action => {
         message: `There was a problem setting up the request (${err.message})`
       };
     }
-    console.log(
+    console.error(
       "error",
       err,
       "msg",

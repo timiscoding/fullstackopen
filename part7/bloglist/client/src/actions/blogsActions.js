@@ -3,13 +3,19 @@ import { blogListSchema, blogSchema } from "../schemas";
 import { setNotification, setErrorNotification } from "./notificationActions";
 import { httpAction } from "./index";
 
-export const fetchBlogs = notify =>
-  httpAction({
+export const fetchBlogs = ({ page = 1, limit = 10, sort } = { limit: 10 }) => {
+  page = parseInt(page) || 1;
+  const params = new URLSearchParams();
+  params.set("offset", (page - 1) * limit);
+  params.set("limit", limit);
+  sort && params.set("sort", sort);
+  return httpAction({
     type: actionTypes.FETCH_BLOGS_REQUEST,
-    url: "/api/blogs",
+    url: `/api/blogs?${params}`,
     schema: blogListSchema,
-    notify
+    data: { page, limit, sort }
   });
+};
 
 export const fetchBlog = (id, notify) =>
   httpAction({
@@ -19,14 +25,17 @@ export const fetchBlog = (id, notify) =>
     notify
   });
 
-export const addBlog = blog =>
+export const addBlog = (blog, history) =>
   httpAction({
     type: actionTypes.ADD_BLOG_REQUEST,
     url: "/api/blogs",
     schema: blogSchema,
     method: "POST",
     payload: blog,
-    onSuccess: () => setNotification("Blog created"),
+    onSuccess: () => dispatch => {
+      history.push("/blogs");
+      dispatch(setNotification("Blog created"));
+    },
     onFail: err => setErrorNotification("Failed to create blog", err)
   });
 
@@ -40,7 +49,7 @@ export const deleteBlog = (id, userId, history) =>
       userId
     },
     onSuccess: () => dispatch => {
-      history.push("/");
+      history.push(`/users/${userId}`);
       dispatch(setNotification("Deleted blog"));
     },
     onFail: err => setErrorNotification("Failed to delete blog", err)
@@ -61,7 +70,7 @@ export const likeBlog = blog =>
 
 export const addComment = (blogId, comment) =>
   httpAction({
-    type: "ADD_COMMENT_REQUEST",
+    type: actionTypes.ADD_COMMENT_REQUEST,
     method: "POST",
     url: `/api/blogs/${blogId}/comments`,
     payload: {

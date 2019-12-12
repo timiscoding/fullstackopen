@@ -19,4 +19,6 @@ const currentUserReducer = (state = null, action) => {
 
 export default currentUserReducer;
 
+/**** SELECTORS ****/
+
 export const getCurrentUser = state => state;

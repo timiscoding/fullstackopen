@@ -5,8 +5,32 @@ const Comment = require("../models/comment");
 const User = require("../models/user");
 
 blogsRouter.get("/", async (req, res) => {
-  const blogs = await Blog.find({});
-  res.json(blogs);
+  let { offset, limit, sort } = req.query;
+  offset = Number(offset);
+  limit = Number(limit);
+  const count = await Blog.find({}).countDocuments();
+  if (
+    !Number.isInteger(offset) ||
+    !Number.isInteger(limit) ||
+    offset < 0 ||
+    offset >= count
+  ) {
+    return res.status(404).end();
+  }
+
+  let query = Blog.find({});
+  const SORT_BY = ["createdAt", "title", "likes"];
+  const SORT_ORDER = ["asc", "desc", 1, -1];
+  if (sort) {
+    const [type, order] = sort.split("-");
+    if (SORT_BY.includes(type) && SORT_ORDER.includes(order)) {
+      // collation enables text to be sorted case insensitive
+      query = query.sort({ [type]: order }).collation({ locale: "en" });
+    }
+  }
+
+  const blogs = await query.skip(offset).limit(limit);
+  res.json({ count, items: blogs });
 });
 
 blogsRouter.get("/:id", async (req, res, next) => {

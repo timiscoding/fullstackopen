@@ -1,10 +1,12 @@
 import { combineReducers } from "redux";
+import { createSelector } from "reselect";
 import notification, * as fromNotifications from "./notificationReducer";
 import blogs, * as fromBlogs from "./blogsReducer";
 import currentUser, * as fromCurrentUser from "./currentUserReducer";
 import users, * as fromUsers from "./usersReducer";
 import ui, * as fromUi from "./uiReducer";
 import comments, * as fromComments from "./commentsReducer";
+import { getActionName } from "./utils";
 
 const rootReducer = combineReducers({
   notification,
@@ -16,6 +18,8 @@ const rootReducer = combineReducers({
 });
 
 export default rootReducer;
+
+/**** TOP LEVEL SELECTORS ****/
 
 export const getBlog = (state, id) => {
   let blog = fromBlogs.getBlog(state.blogs, id);
@@ -31,12 +35,21 @@ export const getUser = (state, id, { populateBlogs = true } = {}) => {
   let user = fromUsers.getUser(state.users, id);
   if (user && populateBlogs) {
     user = { ...user };
-    user.blogs = user.blogs.map(blogId => getBlog(state, blogId));
+    const blogs = [];
+    for (let blogId of user.blogs) {
+      const blog = getBlog(state, blogId);
+      if (!blog) {
+        return null; // invalidate user because blogs haven't been fetched yet
+      }
+      blogs.push(blog);
+    }
+    user.blogs = blogs;
   }
   return user;
 };
 
-export const getUsers = state => fromUsers.getUsers(state.users);
+export const getUsers = (state, sortBy = { sort: "name", order: "asc" }) =>
+  fromUsers.getUsers(state.users, sortBy);
 
 export const getBlogs = state => fromBlogs.getBlogs(state.blogs);
 
@@ -55,57 +68,36 @@ export const getError = (state, actionType) =>
 
 export const getNotificationId = state =>
   fromNotifications.getNotificationId(state);
-/* store schema
 
-  httpAction:
-  {
-    type: 'FETCH_BLOGS_REQUEST',
-    url,
-    payload,
-    data,
-    method,
-    headers,
-    schema,
-    onSuccess: (response) => actionCreator,
-    onFail: err => actionCreator
+const getItems = (state, actionType) => {
+  const actionName = getActionName(actionType);
+  let items;
+  if (actionName === "FETCH_BLOGS") {
+    items = state.blogs;
   }
+  return items.byId;
+};
+const getPageIds = (state, actionType) =>
+  fromUi.getPageIds(state.ui, actionType);
+export const getCurrentPage = (state, actionType) =>
+  fromUi.getCurrentPage(state.ui, actionType);
+const getLastPage = (state, actionType) =>
+  fromUi.getLastPage(state.ui, actionType);
+export const getPage = createSelector(
+  [getPageIds, getCurrentPage, getLastPage, getItems],
+  (itemsIds, currentPage, lastPage, items) => {
+    return {
+      items: itemsIds.map(id => items[id]),
+      currentPage,
+      lastPage
+    };
+  }
+);
 
-  fetch_blogs_request
-  fetch_blogs_success
-  fetch_blogs_fail
+export const getIsPageFetched = (state, actionType, page, sort) =>
+  fromUi.getIsPageFetched(state.ui, actionType, page, sort);
 
-  fetch_blog_request
-  fetch_blog_success
-  fetch_blog_fail
-
-  delete_blog_request
-  delete_blog_success
-  delete_blog_fail
-
-
-  like_blog_request
-  like_blog_success
-  like_blog_fail
-
-  fetch_comments_request
-  fetch_comments_success
-  fetch_comments_fail
-
-  add_comment_request
-  add_comment_success
-  add_comment_fail
-
-  fetch_users_request
-  fetch_users_success
-  fetch_users_fail
-
-  fetch_user_request
-  fetch_user_success
-  fetch_user_fail
-
-  login_request
-  login_success
-  login_fail
+/**** STORE SCHEMA ****
 
   {
     blogs: {
@@ -155,6 +147,22 @@ export const getNotificationId = state =>
       },
       error: {
         FETCH_BLOG: message,
+      },
+      paging: {
+        FETCH_BLOGS: {
+          invalidData: boolean,
+          currentPage,
+          lastPage,
+          limit,
+          sort,
+          pages: {
+            1: [blogIds],
+            2: [blogIds],
+          }
+        },
+        FETCH_USERS: {
+          ...
+        }
       },
     }
   }

@@ -32,7 +32,7 @@ export const useField = type => {
   https://github.com/wsmd/react-use-form-state
 */
 
-const inputTypes = ["text", "password"];
+const inputTypes = ["text", "password", "textarea"];
 
 export const useFormState = formRef => {
   const [{ values, errors, validity }, dispatch] = useReducer(
@@ -122,4 +122,39 @@ export const useFormState = formRef => {
     },
     inputs
   ];
+};
+
+export const useResizeObserver = nodes => {
+  useEffect(() => {
+    const ro = new ResizeObserver(entries => {
+      entries.forEach(entry => {
+        const target = nodes.find(node => node.ref.current === entry.target);
+        target.cb(entry);
+      });
+    });
+
+    nodes.forEach(({ ref }) => ro.observe(ref.current));
+    return () => ro.disconnect();
+  });
+};
+
+export const useInputErrorHeights = (refs, errors) => {
+  const [heights, setHeights] = useState({});
+  useEffect(() => {
+    let shouldUpdate = false;
+    const newHeights = Object.keys(refs).reduce((res, id) => {
+      const newHeight = errors[id] ? refs[id].current.scrollHeight : 0;
+      if (newHeight !== heights[id]) {
+        shouldUpdate = true;
+      }
+      return {
+        ...res,
+        [id]: newHeight
+      };
+    }, {});
+    if (shouldUpdate) {
+      setHeights(newHeights);
+    }
+  }, [errors, refs, heights]);
+  return heights;
 };

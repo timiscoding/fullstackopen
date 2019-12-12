@@ -2,31 +2,38 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 const Comment = require("../models/comment");
 
-const blogSchema = mongoose.Schema({
-  title: {
-    type: String,
-    required: true
-  },
-  author: String,
-  url: {
-    type: String,
-    required: true
-  },
-  likes: {
-    type: Number,
-    default: 0
-  },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
-  comments: [
-    {
+const blogSchema = mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true
+    },
+    author: String,
+    url: {
+      type: String,
+      required: true
+    },
+    likes: {
+      type: Number,
+      default: 0
+    },
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Comment"
-    }
-  ]
-});
+      ref: "User"
+    },
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment"
+      }
+    ]
+  },
+  { timestamps: true }
+);
+
+blogSchema.index({ title: 1 });
+blogSchema.index({ likes: 1 });
+blogSchema.index({ createdAt: 1 });
 
 blogSchema.set("toJSON", {
   transform: (doc, ret) => {

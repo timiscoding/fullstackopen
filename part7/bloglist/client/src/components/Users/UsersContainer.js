@@ -1,31 +1,60 @@
-import React, { useEffect } from "react";
+import React, { useLayoutEffect } from "react";
 import { connect } from "react-redux";
 import { fetchUsers } from "../../actions";
 import { getPending, getUsers } from "../../reducers";
 import * as actionTypes from "../../constants/actionTypes";
 import Users from "./UsersView";
 import Error from "../Error";
-import Loading from "../Loading";
 import { getError } from "../../reducers";
 
-const UsersContainer = ({ users, fetchUsers, error, isFetchingUsers }) => {
-  useEffect(() => {
+const UsersContainer = ({
+  users,
+  fetchUsers,
+  error,
+  isFetchingUsers,
+  history
+}) => {
+  useLayoutEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
+  const handleUserClick = userId => {
+    history.push(`/users/${userId}`);
+  };
+
   if (error) return <Error error={error} />;
-  if (isFetchingUsers && users.length === 0) return <Loading label="users" />;
-  if (!isFetchingUsers && users.length === 0) return <h2>No users</h2>;
-  if (users.length > 0) return <Users users={users} />;
+
+  return (
+    <>
+      <h2>Users</h2>
+      {!isFetchingUsers && users.length === 0 && <p>No users to show</p>}
+      {
+        <Users
+          users={isFetchingUsers ? null : users}
+          onUserClick={handleUserClick}
+        />
+      }
+    </>
+  );
 };
 
-const mapStateToProps = state => ({
-  isFetchingUsers: getPending(state, actionTypes.FETCH_USERS_REQUEST) || true,
-  users: getUsers(state),
+const mapStateToProps = (state, { location }) => ({
+  isFetchingUsers: getPending(state, actionTypes.FETCH_USERS_REQUEST),
+  users: (() => {
+    const query = new URLSearchParams(location.search);
+    let sort;
+    for (let [k, v] of query.entries()) {
+      const [, sortBy] = k.match(/sort\[(.*)\]/) || [];
+      if (sortBy) {
+        sort = {
+          sort: sortBy,
+          order: v
+        };
+      }
+    }
+    return getUsers(state, sort);
+  })(),
   error: getError(state, actionTypes.FETCH_USERS_REQUEST)
 });
 
-export default connect(
-  mapStateToProps,
-  { fetchUsers }
-)(UsersContainer);
+export default connect(mapStateToProps, { fetchUsers })(UsersContainer);

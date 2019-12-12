@@ -9,6 +9,13 @@ import Comments from "./CommentsView";
 import * as selectors from "../../reducers";
 import * as actionTypes from "../../constants/actionTypes";
 
+const shouldFetchBlog = (blog, isFetching) => {
+  if (isFetching) return false;
+  if (!blog) return true;
+  if (!blog.user) return true;
+  return false;
+};
+
 const BlogContainer = ({
   blog,
   likeBlog,
@@ -21,13 +28,14 @@ const BlogContainer = ({
   isLiking,
   isDeleting,
   isCommenting,
-  error
+  error,
+  isFetchingBlog
 }) => {
   useEffect(() => {
-    if (!blog) {
+    if (shouldFetchBlog(blog, isFetchingBlog)) {
       fetchBlog(match.params.id);
     }
-  }, [blog, fetchBlog, match.params.id]);
+  }, [blog, fetchBlog, match.params.id, isFetchingBlog]);
 
   const handleDelete = () => {
     const ok = window.confirm(`Delete ${blog.title} by ${blog.author}?`);
@@ -38,7 +46,12 @@ const BlogContainer = ({
   const handleComment = comment => addComment(blog.id, comment);
 
   if (error) return <Error error={error} />;
-  if (!blog) return <Loading label="blog" />;
+  if (shouldFetchBlog(blog))
+    return (
+      <Loading pending={isFetchingBlog}>
+        <h2>Loading blog</h2>
+      </Loading>
+    );
 
   return (
     <div>
@@ -72,17 +85,15 @@ const mapStateToProps = (state, { match }) => {
     isLiking: selectors.getPending(state, actionTypes.LIKE_BLOG_REQUEST),
     isDeleting: selectors.getPending(state, actionTypes.DELETE_BLOG_REQUEST),
     isCommenting: selectors.getPending(state, actionTypes.ADD_COMMENT_REQUEST),
+    isFetchingBlog: selectors.getPending(state, actionTypes.FETCH_BLOG_REQUEST),
     error: selectors.getError(state, actionTypes.FETCH_BLOG_REQUEST)
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    likeBlog,
-    deleteBlog,
-    setNotification,
-    addComment,
-    fetchBlog
-  }
-)(BlogContainer);
+export default connect(mapStateToProps, {
+  likeBlog,
+  deleteBlog,
+  setNotification,
+  addComment,
+  fetchBlog
+})(BlogContainer);

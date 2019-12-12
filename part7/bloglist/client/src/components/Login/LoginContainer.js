@@ -13,7 +13,7 @@ const LoginContainer = ({ currentUser, login, pending }) => {
 
   return (
     <div>
-      <h2>Login to the application</h2>
+      <h2>Login</h2>
       <LoginForm onLogin={login} pending={pending} />
     </div>
   );

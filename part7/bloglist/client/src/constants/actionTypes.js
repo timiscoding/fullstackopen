@@ -42,3 +42,5 @@ export const CHANGE_INPUT = "CHANGE_INPUT";
 export const SET_ERRORS = "SET_ERRORS";
 export const CLEAR_INPUT = "CLEAR_INPUT";
 export const CLEAR_ALL = "CLEAR_ALL";
+
+export const SET_CURRENT_PAGE = "SET_CURRENT_PAGE";

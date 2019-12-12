@@ -1,63 +1,48 @@
 import * as actionTypes from "../constants/actionTypes";
 import { combineReducers } from "redux";
-import { removeDupes } from "./utils";
+import produce from "immer";
+import union from "lodash/union";
+import uniq from "lodash/uniq";
 
 const addUsers = (state, action) => {
   const { response } = action;
-  const {
-    entities: { users }
-  } = response;
+  // if data is paginated, the data is namespaced under 'items' as there's additional metadata
+  // in the response. Else the data is normalized directly and supplied in the response.
+  const { users } = response.entities || response.items.entities;
   return {
     ...state,
     ...users
   };
 };
 
-const deleteBlogFromUser = (state, action) => {
+const deleteBlogFromUser = produce((state, action) => {
   const { data } = action;
   const { userId, id: blogId } = data;
 
   const blogList = state[userId].blogs.filter(id => id !== blogId);
   if (blogList.length) {
-    const { [userId]: userToUpdate } = state;
-    const updatedUser = { ...userToUpdate, blogs: blogList };
-    return {
-      ...state,
-      [userId]: updatedUser
-    };
+    state[userId].blogs = blogList;
   }
-  return state;
-};
+});
 
 const addAllUsersFromBlogList = (state, action) => {
   // can't get users from normalizr's result array because it contains
   // the blog ids, not the user ids. To get the user ids, we have to
   // manually get it from the entities.users object
   const { response } = action;
-  const {
-    entities: { users }
-  } = response;
-  return removeDupes([...state, ...Object.keys(users)]);
+  const { users } = response.entities || response.items.entities;
+  return union(state, Object.keys(users));
 };
 
-const addBlogToUser = (state, action) => {
+const addBlogToUser = produce((state, action) => {
   const { response } = action;
   const {
     entities: { users }
   } = response;
-  const userId = Object.keys(users)[0];
-  const user = state[userId] ? state[userId] : users[userId];
+  const [[userId, user]] = Object.entries(users); // users contains only the user who added the blog
+  state[userId].blogs = [...user.blogs];
+});
 
-  return {
-    ...state,
-    [userId]: {
-      ...user,
-      blogs: [...users[userId].blogs]
-    }
-  };
-};
-
-// TEST create a new user without any blogs and add blog. check that user is added to store properly
 const byId = (state = {}, action) => {
   switch (action.type) {
     case actionTypes.FETCH_BLOGS_SUCCESS:
@@ -83,7 +68,7 @@ const allIds = (state = [], action) => {
     case actionTypes.FETCH_USERS_SUCCESS:
       return [...action.response.result];
     case actionTypes.FETCH_USER_SUCCESS:
-      return removeDupes([...state, action.response.result]);
+      return uniq([...state, action.response.result]);
     default:
       return state;
   }
@@ -96,8 +81,31 @@ const usersReducer = combineReducers({
 
 export default usersReducer;
 
+/**** SELECTORS ****/
+
 export const getUser = (state, id) => {
   return state.byId[id];
 };
 
-export const getUsers = state => state.allIds.map(id => state.byId[id]);
+export const getUsers = (state, sortBy) => {
+  const users = state.allIds.map(id => state.byId[id]);
+  if (sortBy) {
+    const { order, sort } = sortBy;
+    users.sort((a, b) => {
+      if (sort === "name") {
+        ({ name: a } = a);
+        ({ name: b } = b);
+        a = a.toLowerCase();
+        b = b.toLowerCase();
+        return order === "asc" ? a > b : a < b;
+      } else if (sort === "blogCount") {
+        ({ blogs: a } = a);
+        ({ blogs: b } = b);
+        return order === "asc" ? a.length - b.length : b.length - a.length;
+      } else {
+        throw Error(`Unable to sort by: ${sort}`);
+      }
+    });
+  }
+  return users;
+};

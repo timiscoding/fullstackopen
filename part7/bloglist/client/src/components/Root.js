@@ -1,12 +1,18 @@
 import React from "react";
 import { Provider } from "react-redux";
 import PropTypes from "prop-types";
+import { ThemeProvider } from "styled-components";
 import App from "./App";
+import GlobalStyle from "./GlobalStyle";
+import theme from "./Theme";
 
 const Root = ({ store }) => {
   return (
     <Provider store={store}>
-      <App />
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <App />
+      </ThemeProvider>
     </Provider>
   );
 };

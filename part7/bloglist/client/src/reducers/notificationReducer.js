@@ -13,4 +13,6 @@ const notificationReducer = (state = null, action) => {
 
 export default notificationReducer;
 
+/**** SELECTORS ****/
+
 export const getNotificationId = state => state.cancelId;

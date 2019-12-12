@@ -2,6 +2,19 @@
 
 GET {{baseUrl}}/api/blogs HTTP/1.1
 
+### get sorted blogs
+
+@sortLimit=5
+@sortOffset=5
+@sortBy=title-desc
+GET {{baseUrl}}/api/blogs?limit={{sortLimit}}&offset={{sortOffset}}&sort={{sortBy}} HTTP/1.1
+
+### get blogs by offset and limit
+
+@blogLimit=10
+@blogOffset=0
+GET {{baseUrl}}/api/blogs?limit={{blogLimit}}&offset={{blogOffset}} HTTP/1.1
+
 ### get specific blog
 
 @aBlog=5d3e8f8b46ea150ba3356ed5
@@ -42,7 +55,7 @@ POST {{baseUrl}}/api/blogs/{{blogToComment}}/comments HTTP/1.1
 Content-Type: application/json
 
 {
-  "comment": "me too"
+  "comment": "spiegel"
 }
 
 ### all users

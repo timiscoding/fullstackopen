@@ -1,25 +1,54 @@
 import React from "react";
 import PropTypes from "prop-types";
+import styled from "styled-components";
+import { Link } from "react-router-dom";
+
+const List = styled.ul`
+  padding: 0;
+`;
+
+const Blog = styled.li`
+  list-style-type: none;
+`;
+
+const Title = styled.span`
+  font-weight: 700;
+`;
+
+const Author = styled.span`
+  &:before {
+    content: "by ";
+  }
+  font-size: 0.7em;
+`;
+
+const UserBlogs = ({ blogs }) => {
+  if (blogs.length === 0) return <p>No blogs added</p>;
+  return (
+    <List>
+      {blogs.map(({ title, author, id }, i) => (
+        <Blog key={i}>
+          <Link to={`/blogs/${id}`}>
+            <Title>{title}</Title>
+          </Link>{" "}
+          <Author>{author}</Author>
+        </Blog>
+      ))}
+    </List>
+  );
+};
+
+const Name = styled.span`
+  color: ${({ theme }) => theme.grey};
+`;
 
 const UserView = ({ user }) => {
-  let blogs;
-  if (user.blogs.length === 0) {
-    blogs = <p>No blogs added</p>;
-  } else {
-    blogs = (
-      <ul>
-        {user.blogs.map(({ title }, i) => (
-          <li key={i}>{title}</li>
-        ))}
-      </ul>
-    );
-  }
-
   return (
     <div>
-      <h2>{user.name}</h2>
-      <h3>added blogs</h3>
-      {blogs}
+      <h2>
+        {user.username} <Name>({user.name})</Name>
+      </h2>
+      <UserBlogs blogs={user.blogs} />
     </div>
   );
 };
