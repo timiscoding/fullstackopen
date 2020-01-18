@@ -1,6 +1,7 @@
 import { schema } from "normalizr";
+import { blogListSchema } from "./blogListSchema";
 
-const simpleBlogSchema = new schema.Entity("blogs");
+export const simpleUserSchema = new schema.Entity("users");
 export const userSchema = new schema.Entity("users", {
-  blogs: [simpleBlogSchema]
+  blogs: blogListSchema
 });

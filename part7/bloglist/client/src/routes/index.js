@@ -38,5 +38,4 @@ const routes = [
     main: Error
   }
 ];
-
 export default routes;

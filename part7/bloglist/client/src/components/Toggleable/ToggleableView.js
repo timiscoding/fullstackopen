@@ -7,8 +7,8 @@ import React, {
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import { ResizeObserver as Polyfill } from "@juggle/resize-observer";
-import Button from "./Button";
-import PrimaryButton from "./PrimaryButton";
+import Button from "../Button";
+import PrimaryButton from "../PrimaryButton";
 
 const HideButton = styled(Button)`
   border-radius: 3px;
@@ -29,7 +29,7 @@ const ShowWhenVisible = styled.div`
 
 const ResizeObserver = window.ResizeObserver || Polyfill;
 
-const Toggleable = React.forwardRef(
+const ToggleableView = React.forwardRef(
   ({ buttonLabel, children, className }, ref) => {
     const growRef = useRef();
     const contentRef = useRef();
@@ -101,11 +101,11 @@ const Toggleable = React.forwardRef(
   }
 );
 
-Toggleable.propTypes = {
+ToggleableView.propTypes = {
   buttonLabel: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired
 };
 
-Toggleable.displayName = "Toggleable";
+ToggleableView.displayName = "ToggleableView";
 
-export default Toggleable;
+export default ToggleableView;

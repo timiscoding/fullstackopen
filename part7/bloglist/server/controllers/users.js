@@ -1,15 +1,43 @@
 const usersRouter = require("express").Router();
 const User = require("../models/user");
+const Blog = require("../models/blog");
 const bcrypt = require("bcrypt");
 
 usersRouter.get("/", async (req, res, next) => {
   try {
-    const users = await User.find().populate("blogs", {
-      url: 1,
-      title: 1,
-      author: 1
-    });
-    res.json(users);
+    let { offset, limit, sort } = req.query;
+    offset = Number(offset);
+    limit = Number(limit);
+    if (!Number.isInteger(offset) || !Number.isInteger(limit) || offset < 0) {
+      return res.status(400).end();
+    }
+    const count = await User.estimatedDocumentCount({});
+    let query = User.aggregate([
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
+          username: 1,
+          name: 1,
+          blogCount: { $size: "$blogs" }
+        }
+      }
+    ]);
+
+    const SORT_BY = [
+      "name-asc",
+      "name-desc",
+      "blogCount-asc",
+      "blogCount-desc",
+      "username-asc",
+      "username-desc"
+    ];
+    if (SORT_BY.includes(sort)) {
+      const [type, order] = sort.split("-");
+      query = query.sort({ [type]: order }).collation({ locale: "en" });
+    }
+    const users = await query.skip(offset).limit(limit);
+    res.json({ count, items: users });
   } catch (err) {
     next(err);
   }
@@ -17,11 +45,11 @@ usersRouter.get("/", async (req, res, next) => {
 
 usersRouter.get("/:id", async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id).populate("blogs", {
-      url: 1,
-      title: 1,
-      author: 1
-    });
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).end();
+    }
+
     if (user) {
       return res.json(user);
     } else {

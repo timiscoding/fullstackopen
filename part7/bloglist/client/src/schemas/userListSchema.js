@@ -1,3 +1,3 @@
-import { userSchema } from "./userSchema";
+import { simpleUserSchema } from "./userSchema";
 
-export const userListSchema = [userSchema];
+export const userListSchema = [simpleUserSchema];

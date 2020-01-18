@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
+import Helmet from "react-helmet";
 import LoginForm from "./LoginFormView";
 import { login } from "../../actions";
 import { getCurrentUser, getPending } from "../../reducers";
@@ -12,10 +13,13 @@ const LoginContainer = ({ currentUser, login, pending }) => {
   }
 
   return (
-    <div>
+    <>
+      <Helmet>
+        <title>Login</title>
+      </Helmet>
       <h2>Login</h2>
       <LoginForm onLogin={login} pending={pending} />
-    </div>
+    </>
   );
 };
 
@@ -26,7 +30,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  { login }
-)(LoginContainer);
+export default connect(mapStateToProps, { login })(LoginContainer);

@@ -10,7 +10,11 @@ export default () => next => action => {
 
   let transformResp;
 
-  if (type === actions.FETCH_BLOGS_SUCCESS) {
+  if (
+    type === actions.FETCH_BLOGS_SUCCESS ||
+    type === actions.FETCH_COMMENTS_SUCCESS ||
+    type === actions.FETCH_USERS_SUCCESS
+  ) {
     // Response shape includes metadata so additional processing
     // has to be done before updating the store.
 

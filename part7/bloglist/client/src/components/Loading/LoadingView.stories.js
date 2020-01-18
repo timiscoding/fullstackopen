@@ -18,7 +18,7 @@ export const loaded = () => (
 );
 
 export const toggle = () => {
-  const pending = boolean("Is loading?", true);
+  const pending = boolean("Pending", true);
   return (
     <Loading pending={pending}>
       <h2>{pending ? "This is loading" : "This has loaded"}</h2>

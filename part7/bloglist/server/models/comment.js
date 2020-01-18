@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const commentSchema = new mongoose.Schema(
   {
+    blog: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Blog"
+    },
     body: String
   },
   { timestamps: true }

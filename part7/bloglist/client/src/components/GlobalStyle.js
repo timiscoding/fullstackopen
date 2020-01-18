@@ -11,7 +11,7 @@ export default createGlobalStyle`
   }
 
   a {
-    color: ${({ theme }) => theme.secondaryDark};
+    color: ${({ theme }) => theme.secondaryDarker};
     text-decoration: none;
     &:hover {
       text-decoration: underline;

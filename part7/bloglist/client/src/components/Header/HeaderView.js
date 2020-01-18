@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
+import capitalize from "lodash/capitalize";
 import Notification from "../Notification";
 
 const Wrapper = styled.div`
@@ -21,6 +22,7 @@ const Header = styled.header`
 `;
 
 const Logo = styled.h2`
+  user-select: none;
   font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic,
     "AppleGothic", sans-serif;
   font-size: 20px;
@@ -28,9 +30,12 @@ const Logo = styled.h2`
   text-align: left;
   letter-spacing: 0.5em;
   text-transform: uppercase;
-  color: ${({ theme }) => theme.primaryLighter};
+  color: ${({ theme }) => theme.secondary};
   text-shadow: 2px 2px 0px ${({ theme }) => theme.primaryDark},
     5px 3px 1px rgba(255, 255, 255, 0.5);
+  &:hover {
+    color: ${({ theme }) => theme.secondaryDark};
+  }
 `;
 
 const Nav = styled.nav`
@@ -50,16 +55,19 @@ const StyledNavLink = styled(NavLink)`
   }
 `;
 
-const User = styled.span`
-  color: #e8e8e8;
-  margin-right: 20px;
+const LogoLink = styled(NavLink)`
+  &:hover {
+    text-decoration: none;
+  }
 `;
 
 const HeaderView = ({ currentUser, onLogout }) => {
   return (
     <Wrapper>
       <Header>
-        <Logo>BlogList</Logo>
+        <LogoLink to="/">
+          <Logo>BlogList</Logo>
+        </LogoLink>
         <Nav>
           <StyledNavLink exact to="/blogs">
             Blogs
@@ -69,10 +77,9 @@ const HeaderView = ({ currentUser, onLogout }) => {
           </StyledNavLink>
           {currentUser !== null ? (
             <>
-              <User>
-                {currentUser.name[0].toUpperCase() + currentUser.name.substr(1)}{" "}
-                logged in
-              </User>
+              <StyledNavLink to={`/users/${currentUser.id}`}>
+                {capitalize(currentUser.name)}
+              </StyledNavLink>
               <StyledNavLink href="#" as={"a"} onClick={onLogout}>
                 Log out
               </StyledNavLink>

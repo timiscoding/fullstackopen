@@ -1,5 +1,5 @@
 import { httpAction } from "./index";
-import { setErrorNotification } from "./notificationActions";
+import { setErrorNotification, fetchUser } from "./";
 import * as actionTypes from "../constants/actionTypes";
 
 export const login = credentials =>
@@ -11,11 +11,14 @@ export const login = credentials =>
     onFail: err => setErrorNotification("Problem logging in", err)
   });
 
-export const setUser = user => ({
-  type: "LOGIN_SUCCESS",
-  data: user
-});
+export const setUser = user => dispatch => {
+  dispatch({
+    type: actionTypes.SET_USER,
+    data: user
+  });
+  dispatch(fetchUser(user.id));
+};
 
 export const logout = () => ({
-  type: "CLEAR_USER"
+  type: actionTypes.CLEAR_USER
 });

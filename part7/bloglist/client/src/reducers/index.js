@@ -25,28 +25,13 @@ export const getBlog = (state, id) => {
   let blog = fromBlogs.getBlog(state.blogs, id);
   if (blog) {
     blog = { ...blog };
-    blog.user = getUser(state, blog.user, { populateBlogs: false });
+    blog.user = getUser(state, blog.user);
     blog.comments = getComments(state, blog.comments);
   }
   return blog;
 };
 
-export const getUser = (state, id, { populateBlogs = true } = {}) => {
-  let user = fromUsers.getUser(state.users, id);
-  if (user && populateBlogs) {
-    user = { ...user };
-    const blogs = [];
-    for (let blogId of user.blogs) {
-      const blog = getBlog(state, blogId);
-      if (!blog) {
-        return null; // invalidate user because blogs haven't been fetched yet
-      }
-      blogs.push(blog);
-    }
-    user.blogs = blogs;
-  }
-  return user;
-};
+export const getUser = (state, id) => fromUsers.getUser(state.users, id);
 
 export const getUsers = (state, sortBy = { sort: "name", order: "asc" }) =>
   fromUsers.getUsers(state.users, sortBy);
@@ -63,8 +48,8 @@ const getComments = (state, ids) => {
 export const getCurrentUser = state =>
   fromCurrentUser.getCurrentUser(state.currentUser);
 
-export const getError = (state, actionType) =>
-  fromUi.getError(state.ui, actionType);
+export const getError = (state, actionTypes) =>
+  fromUi.getError(state.ui, actionTypes);
 
 export const getNotificationId = state =>
   fromNotifications.getNotificationId(state);
@@ -74,6 +59,10 @@ const getItems = (state, actionType) => {
   let items;
   if (actionName === "FETCH_BLOGS") {
     items = state.blogs;
+  } else if (actionName === "FETCH_COMMENTS") {
+    items = state.comments;
+  } else if (actionName === "FETCH_USERS") {
+    items = state.users;
   }
   return items.byId;
 };
@@ -94,8 +83,8 @@ export const getPage = createSelector(
   }
 );
 
-export const getIsPageFetched = (state, actionType, page, sort) =>
-  fromUi.getIsPageFetched(state.ui, actionType, page, sort);
+export const getIsPageFetched = (state, actionType, data) =>
+  fromUi.getIsPageFetched(state.ui, actionType, data);
 
 /**** STORE SCHEMA ****
 
@@ -112,16 +101,19 @@ export const getIsPageFetched = (state, actionType, page, sort) =>
           comments: [c1, ...]
         },
         ...
+      },
+      allIds: [b1, ...],
+      byUser: {
+        userId1: [b1, b2, ...],
       }
-      allIds: [b1, ...]
     },
     comments: {
-      byId: {
-        c1: {
-          id: c1,
-          body,
-        }
+      c1: {
+        id: c1,
+        body,
+        blog: "blogId"
       },
+      ...
     },
     users: {
       byId: {
@@ -150,7 +142,6 @@ export const getIsPageFetched = (state, actionType, page, sort) =>
       },
       paging: {
         FETCH_BLOGS: {
-          invalidData: boolean,
           currentPage,
           lastPage,
           limit,
@@ -161,7 +152,11 @@ export const getIsPageFetched = (state, actionType, page, sort) =>
           }
         },
         FETCH_USERS: {
-          ...
+          ...same fields as FETCH_BLOGS
+        },
+        FETCH_COMMENTS: {
+          blogId,
+          ...same fields as FETCH_BLOGS
         }
       },
     }

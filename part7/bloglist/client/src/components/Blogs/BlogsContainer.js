@@ -1,12 +1,13 @@
-import React, { useLayoutEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import styled from "styled-components";
-import BlogList from "./BlogList";
+import { Helmet } from "react-helmet";
+import BlogList from "../BlogList";
 import Toggleable from "../Toggleable";
 import BlogForm from "./BlogForm";
 import Error from "../Error";
 import Pager from "../Pager";
-import Dropdown from "../Dropdown";
+import { SortBlogsDropdown } from "../Dropdown";
 import { fetchBlogs, likeBlog } from "../../actions";
 import { getPending, getCurrentUser, getError, getPage } from "../../reducers";
 import * as actionTypes from "../../constants/actionTypes";
@@ -24,41 +25,9 @@ const StyledToggleable = styled(Toggleable)`
   margin-bottom: 10px;
 `;
 
-const SortDropdown = styled(Dropdown)`
-  --dd-width: 200px;
-  float: right;
+const StyledPager = styled(Pager)`
+  margin-bottom: 20px;
 `;
-
-const Wrapper = styled.div`
-  // position: relative;
-`;
-
-const sortOptions = [
-  {
-    value: "createdAt-desc",
-    title: "Sort by: Newest first"
-  },
-  {
-    value: "createdAt-asc",
-    title: "Sort by: Oldest first"
-  },
-  {
-    value: "title-asc",
-    title: "Sort by: Title A-Z"
-  },
-  {
-    value: "title-desc",
-    title: "Sort by: Title Z-A"
-  },
-  {
-    value: "likes-desc",
-    title: "Sort by: Most popular first"
-  },
-  {
-    value: "likes-asc",
-    title: "Sort by: Least popular first"
-  }
-];
 
 const BlogsContainer = ({
   currentUser,
@@ -72,14 +41,14 @@ const BlogsContainer = ({
   page
 }) => {
   const blogFormRef = React.useRef(null);
-  const SORT_BY_NEWEST = sortOptions[0].value;
-
-  useLayoutEffect(() => {
+  const [pageNum, setPageNum] = useState();
+  useEffect(() => {
     const query = new URLSearchParams(location.search);
     const page = query.get("page") || 1;
-    const sort = query.get("sort") || SORT_BY_NEWEST;
+    const sort = query.get("sort") || SortBlogsDropdown.DEFAULT_VALUE;
     fetchBlogs({ page, sort });
-  }, [fetchBlogs, location, SORT_BY_NEWEST]);
+    setPageNum(page);
+  }, [fetchBlogs, location]);
 
   const handleLike = blog => {
     if (!currentUser) {
@@ -102,16 +71,17 @@ const BlogsContainer = ({
   };
 
   if (error) return <Error error={error} />;
+  const pending = !page.currentPage || isFetchingBlogs;
   return (
     <>
+      <Helmet>
+        <title>{pageNum ? `Blogs - Page ${pageNum}` : "Blogs"}</title>
+      </Helmet>
       <h2>Blogs</h2>
-      <Wrapper>
-        <SortDropdown
-          options={sortOptions}
-          defaultValue={
-            new URLSearchParams(location.search).get("sort") || SORT_BY_NEWEST
-          }
+      <div>
+        <SortBlogsDropdown
           onChange={sort => handleChange("sort", sort)}
+          defaultValue={new URLSearchParams(location.search).get("sort")}
         />
         {currentUser ? (
           <StyledToggleable
@@ -129,19 +99,14 @@ const BlogsContainer = ({
             />
           </StyledToggleable>
         ) : null}
-      </Wrapper>
-      {!isFetchingBlogs && page.items.length === 0 && <h2>No blogs</h2>}
-
-      <BlogList
-        blogs={page.items}
-        onLike={handleLike}
-        pending={isFetchingBlogs}
-      />
-      <Pager
-        currentPage={page.currentPage}
-        lastPage={page.lastPage}
+      </div>
+      <BlogList blogs={page?.items} onLike={handleLike} pending={pending} />
+      <StyledPager
+        currentPage={page?.currentPage}
+        lastPage={page?.lastPage}
         maxNavPages={6}
         onClick={page => handleChange("page", page)}
+        pending={pending}
       />
     </>
   );

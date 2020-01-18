@@ -1,10 +1,12 @@
+import * as actionTypes from "../constants/actionTypes";
+
 const notificationReducer = (state = null, action) => {
   switch (action.type) {
-    case "SET_NOTIFICATION":
+    case actionTypes.SET_NOTIFICATION:
       return {
         ...action.data
       };
-    case "CLEAR_NOTIFICATION":
+    case actionTypes.CLEAR_NOTIFICATION:
       return null;
     default:
       return state;

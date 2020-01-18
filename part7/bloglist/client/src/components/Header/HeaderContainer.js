@@ -1,11 +1,18 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
+import { withRouter } from "react-router-dom";
 import { currentUserLocalStorageKey } from "../../constants/authentication";
 import Header from "./HeaderView";
 import { getCurrentUser } from "../../reducers";
-import { logout, setUser } from "../../actions";
+import { logout, setUser, setNotification } from "../../actions";
 
-const HeaderContainer = ({ logout, setUser, currentUser }) => {
+const HeaderContainer = ({
+  logout,
+  setUser,
+  currentUser,
+  history,
+  setNotification
+}) => {
   const checkStoredCurrentUser = () => {
     const currentUserJSON = window.localStorage.getItem(
       currentUserLocalStorageKey
@@ -26,17 +33,24 @@ const HeaderContainer = ({ logout, setUser, currentUser }) => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    history.push("/");
+    setNotification("You have been logged out");
+  };
+
   useEffect(checkStoredCurrentUser, []);
   useEffect(updateStoredCurrentUser, [currentUser]);
 
-  return <Header currentUser={currentUser} onLogout={logout} />;
+  return <Header currentUser={currentUser} onLogout={handleLogout} />;
 };
 
 const mapStateToProps = state => ({
   currentUser: getCurrentUser(state)
 });
 
-export default connect(
-  mapStateToProps,
-  { logout, setUser }
-)(HeaderContainer);
+export default withRouter(
+  connect(mapStateToProps, { logout, setUser, setNotification })(
+    HeaderContainer
+  )
+);

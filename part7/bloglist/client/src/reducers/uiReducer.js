@@ -1,6 +1,7 @@
 import { combineReducers } from "redux";
 import produce from "immer";
 import set from "lodash/set";
+import get from "lodash/get";
 import { getActionName } from "./utils";
 import * as actions from "../constants/actionTypes";
 
@@ -31,49 +32,92 @@ const error = produce((state, action) => {
    This function resets the paging state for the other
    action type so it will refetch the data
 */
-const setValidData = (state, actionType) => {
+const setValidData = produce((state, action) => {
   let invalidDataKey;
-  if (actionType === actions.FETCH_BLOGS_SUCCESS) {
+  if (action.type === actions.FETCH_BLOGS_SUCCESS) {
     invalidDataKey = "FETCH_USERS";
-  } else if (actionType === actions.FETCH_USERS_SUCCESS) {
+  } else if (action.type === actions.FETCH_USERS_SUCCESS) {
     invalidDataKey = "FETCH_BLOGS";
   }
   set(state, [invalidDataKey, "pages"], null);
-};
+});
 
-const paging = produce((state, action) => {
+const updatePaging = produce((state, action) => {
   const actionName = getActionName(action.type);
-  if (action.type === actions.FETCH_BLOGS_SUCCESS) {
-    let paging = state[actionName];
-    if (!paging) {
-      paging = state[actionName] = {};
+  set(
+    state,
+    [actionName, "lastPage"],
+    Math.ceil(action.response.count / action.data.limit)
+  );
+  set(state, [actionName, "limit"], action.data.limit);
+  set(
+    state,
+    [actionName, "pages", action.data.page],
+    [...action.response.items.result]
+  );
+});
+
+const maybeInvalidatePages = produce((state, action) => {
+  const actionName = getActionName(action.type);
+  const fields = {
+    FETCH_BLOGS: ["sort", "userId"],
+    FETCH_USERS: ["sort"],
+    FETCH_COMMENTS: ["sort", "blogId"]
+  };
+  fields[actionName].forEach(field => {
+    if (get(state, [actionName, field]) !== action.data[field]) {
+      // invalidate previous page data because the field changed
+      set(state, [actionName, "pages"], {
+        [action.data.page]: [...action.response.items.result]
+      });
     }
-    paging.pages = paging.pages || {};
-    paging.lastPage = Math.ceil(action.response.count / action.data.limit);
-    paging.limit = action.data.limit;
-    if (paging.sort !== action.data.sort) {
-      // invalidate previous page data because the sort changed
-      paging.pages = {};
-    }
-    paging.pages[action.data.page] = [...action.response.items.result];
-    paging.sort = action.data.sort;
-    setValidData(state, action.type);
-  } else if (action.type === actions.SET_CURRENT_PAGE) {
-    const actionName = getActionName(action.data.actionType);
-    let paging = state[actionName];
-    if (!paging) {
-      paging = state[actionName] = {};
-    }
-    paging.currentPage = action.data.page;
-  } else if (action.type === actions.FETCH_USERS_SUCCESS) {
-    setValidData(state, action.type);
-  } else if (
+    set(state, [actionName, field], action.data[field]);
+  });
+});
+
+const invalidatePages = produce((state, action) => {
+  if (
     action.type === actions.DELETE_BLOG_SUCCESS ||
+    action.type === actions.DELETE_BLOGS_SUCCESS ||
     action.type === actions.ADD_BLOG_SUCCESS
   ) {
     set(state, "FETCH_BLOGS.pages", null);
+  } else if (action.type === actions.ADD_COMMENT_SUCCESS) {
+    set(state, "FETCH_COMMENTS.pages", null);
   }
-}, {});
+});
+
+const updateCurrentPage = produce((state, action) => {
+  const actionName = getActionName(action.data.actionType);
+  set(state, [actionName, "currentPage"], action.data.page);
+});
+
+const paging = (state = {}, action) => {
+  if (action.type === actions.FETCH_BLOGS_SUCCESS) {
+    let nextState = updatePaging(state, action);
+    nextState = maybeInvalidatePages(nextState, action);
+    nextState = setValidData(nextState, action);
+    return nextState;
+  } else if (action.type === actions.FETCH_COMMENTS_SUCCESS) {
+    const nextState = updatePaging(state, action);
+    return maybeInvalidatePages(nextState, action);
+  } else if (action.type === actions.FETCH_USERS_SUCCESS) {
+    let nextState = updatePaging(state, action);
+    nextState = maybeInvalidatePages(nextState, action);
+    return setValidData(nextState, action);
+  } else if (action.type === actions.SET_CURRENT_PAGE) {
+    return updateCurrentPage(state, action);
+  } else if (
+    action.type === actions.DELETE_BLOG_SUCCESS ||
+    action.type === actions.DELETE_BLOGS_SUCCESS ||
+    action.type === actions.ADD_BLOG_SUCCESS ||
+    action.type === actions.ADD_COMMENT_SUCCESS
+  ) {
+    return invalidatePages(state, action);
+  } else {
+    return state;
+  }
+};
 
 const uiReducer = combineReducers({
   pending,
@@ -88,8 +132,20 @@ export default uiReducer;
 export const getPending = (state, actionType) =>
   state.pending[getActionName(actionType)] || false;
 
-export const getError = (state, actionType) =>
-  state.error[getActionName(actionType)];
+export const getError = (state, actionTypes) => {
+  let types = [];
+  if (Array.isArray(actionTypes)) {
+    types = actionTypes;
+  } else {
+    types = [actionTypes];
+  }
+  for (let type of types) {
+    const err = state.error[getActionName(type)];
+    if (err) {
+      return err;
+    }
+  }
+};
 
 export const getPageIds = (state, actionType) => {
   const pageData = state.paging[getActionName(actionType)];
@@ -107,12 +163,33 @@ export const getCurrentPage = (state, actionType) => {
   return pageData.currentPage;
 };
 
-export const getIsPageFetched = (state, actionType, page, sort) => {
-  const pageData = state.paging[getActionName(actionType)];
+export const getIsPageFetched = (
+  state,
+  actionType,
+  { page, sort, blogId, userId }
+) => {
+  const actionName = getActionName(actionType);
+  const pageData = state.paging[actionName];
   if (!pageData || !pageData.pages) {
     return false;
   }
-  return !!pageData.pages[page] && sort === pageData.sort;
+  if (actionName === "FETCH_BLOGS") {
+    return (
+      !!pageData.pages[page] &&
+      sort === pageData.sort &&
+      userId === pageData.userId
+    );
+  }
+  if (actionName === "FETCH_COMMENTS") {
+    return (
+      !!pageData.pages[page] &&
+      blogId === pageData.blogId &&
+      sort === pageData.sort
+    );
+  }
+  if (actionName === "FETCH_USERS") {
+    return !!pageData.pages[page] && sort === pageData.sort;
+  }
 };
 
 export const getLastPage = (state, actionType) => {

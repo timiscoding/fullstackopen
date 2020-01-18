@@ -1,17 +1,14 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import styled, { css } from "styled-components";
 import { ellipsis } from "polished";
 import Skeleton from "react-loading-skeleton";
-import { ReactComponent as SortUpIcon } from "../../icons/triangle-up.svg";
-import { ReactComponent as SortDownIcon } from "../../icons/triangle-down.svg";
 
 const border = css`1px solid ${({ theme }) => theme.grey};`;
 
 const BaseRow = styled.li`
   display: grid;
-  grid-template-columns: minmax(100px, 20%) 1fr;
+  grid-template-columns: minmax(100px, 20%) minmax(100px, 20%) 1fr;
   list-style-type: none;
   border-top: ${border}
   border-left: ${border}
@@ -41,29 +38,9 @@ const Table = styled.ul`
   padding: 0;
 `;
 
-const StyledSortUpIcon = styled(SortUpIcon)`
-  width: 1em;
-  height: 1em;
-  fill: ${({ theme }) => theme.secondary};
-  vertical-align: sub;
-`;
-
 const Name = styled.div`
   ${ellipsis("100%")}
 `;
-
-const SortLinks = ({ name }) => {
-  return (
-    <>
-      <Link to={{ search: `?sort[${name}]=asc` }}>
-        <StyledSortUpIcon />
-      </Link>{" "}
-      <Link to={{ search: `?sort[${name}]=desc` }}>
-        <StyledSortUpIcon as={SortDownIcon} />
-      </Link>
-    </>
-  );
-};
 
 const SkeletonRow = styled(BaseRow)`
   &:first-child {
@@ -71,48 +48,44 @@ const SkeletonRow = styled(BaseRow)`
   }
 `;
 
-const TableSkeleton = () => {
-  return (
-    <div>
-      {Array(10)
-        .fill(Array(2).fill())
-        .map((cols, i) => (
-          <SkeletonRow key={i}>
-            {cols.map((_, j) => (
-              <div key={j}>
-                <Skeleton />
-              </div>
-            ))}
-          </SkeletonRow>
-        ))}
-    </div>
-  );
-};
+const TableSkeleton = ({ className }) => (
+  <Table className={className}>
+    {Array(10)
+      .fill(Array(3).fill())
+      .map((cols, i) => (
+        <SkeletonRow key={i}>
+          {cols.map((_, j) => (
+            <div key={j}>
+              <Skeleton width="50%" />
+            </div>
+          ))}
+        </SkeletonRow>
+      ))}
+  </Table>
+);
 
-const UsersView = ({ users, onUserClick }) => {
-  if (!users) {
-    return <TableSkeleton />;
+const UsersView = ({ users, onUserClick, pending, className }) => {
+  if (pending) {
+    return <TableSkeleton className={className} />;
   }
-
+  if (!pending && users.length === 0) {
+    return <p>No users yet</p>;
+  }
   return (
-    <section>
-      <Table>
-        <Row>
-          <div>
-            Name <SortLinks name="name" />
-          </div>
-          <div>
-            Blogs created <SortLinks name="blogCount" />
-          </div>
+    <Table className={className}>
+      <Row>
+        <div>Username</div>
+        <div>Name</div>
+        <div>Total Blogs</div>
+      </Row>
+      {users.map(({ id, blogCount, name, username }) => (
+        <Row key={id} onClick={() => onUserClick(id)}>
+          <Name>{username}</Name>
+          <Name>{name}</Name>
+          <div>{blogCount}</div>
         </Row>
-        {users.map(({ id, blogs, name }) => (
-          <Row key={id} onClick={() => onUserClick(id)}>
-            <Name>{name}</Name>
-            <div>{blogs.length}</div>
-          </Row>
-        ))}
-      </Table>
-    </section>
+      ))}
+    </Table>
   );
 };
 
@@ -122,7 +95,7 @@ UsersView.propTypes = {
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
       username: PropTypes.string.isRequired,
-      blogs: PropTypes.arrayOf(PropTypes.string).isRequired
+      blogCount: PropTypes.number.isRequired
     })
   )
 };

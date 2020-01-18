@@ -27,7 +27,8 @@ const MyDropdown = styled(Dropdown)`
 `;
 
 export default {
-  title: "Dropdown"
+  title: "Dropdown",
+  decorators: [withKnobs]
 };
 
 const options = [
@@ -79,7 +80,3 @@ export const customStyle = () => (
     fontSize={number("font size (em)", 1)}
   />
 );
-
-customStyle.story = {
-  decorators: [withKnobs]
-};

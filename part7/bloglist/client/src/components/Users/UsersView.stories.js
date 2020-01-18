@@ -6,36 +6,33 @@ import UsersView from "./UsersView";
 const users = [
   {
     id: "1",
+    username: "zerocool",
     name: "abel",
-    blogs: Array(3).fill()
+    blogCount: 3
   },
   {
     id: "2",
+    username: "morpheus",
     name: "jobe",
-    blogs: Array(12).fill()
+    blogCount: 12
   },
   {
     id: "3",
+    username: "powerpuff",
     name: "nancy",
-    blogs: Array(8).fill()
+    blogCount: 8
   }
 ];
 
 export default {
-  title: "Users"
+  title: "Users",
+  decorators: [withKnobs]
 };
 
 export const normal = () => (
-  <UsersView users={users} onUserClick={action("clicked user")} />
-);
-
-export const loading = () => (
   <UsersView
-    users={boolean("Loading users?", true) ? null : users}
+    users={boolean("No users") ? [] : users}
     onUserClick={action("clicked user")}
+    pending={boolean("Pending")}
   />
 );
-
-loading.story = {
-  decorators: [withKnobs]
-};

@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 const Comment = require("../models/comment");
 
+const schemaOptions = { timestamps: true };
+
 const blogSchema = mongoose.Schema(
   {
     title: {
@@ -20,16 +22,17 @@ const blogSchema = mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"
-    },
-    comments: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Comment"
-      }
-    ]
+    }
   },
-  { timestamps: true }
+  schemaOptions
 );
+
+blogSchema.virtual("commentCount", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "blog",
+  count: true
+});
 
 blogSchema.index({ title: 1 });
 blogSchema.index({ likes: 1 });
@@ -47,7 +50,8 @@ blogSchema.set("toJSON", {
     }
     delete ret._id;
     delete ret.__v;
-  }
+  },
+  virtuals: true
 });
 
 const withUserAndComments = async docs => {
@@ -55,8 +59,8 @@ const withUserAndComments = async docs => {
   const promises = docs.map(doc => {
     if (!doc) return;
     return doc
+      .populate("commentCount")
       .populate("user")
-      .populate("comments")
       .execPopulate();
   });
   await Promise.all(promises);
@@ -69,11 +73,7 @@ const deleteBlogFromUser = async blog => {
 };
 
 const deleteCommentsFromBlog = async blog => {
-  const { comments } = blog;
-  const commentIds = comments.map(comment => comment._id);
-  await Comment.deleteMany()
-    .where("_id")
-    .in(commentIds);
+  await Comment.deleteMany({ blog: blog._id });
 };
 
 const addBlogToUser = async blog => {
@@ -83,9 +83,41 @@ const addBlogToUser = async blog => {
   await user.save();
 };
 
+async function deleteAllBlogsFromUser() {
+  const filter = this.getFilter();
+  const user = await User.findById(filter.user);
+  user.blogs = user.blogs.filter(
+    objId => !filter._id.$in.includes(objId._id.toString())
+  );
+  await user.save();
+}
+
+// verifies all blogs marked for deleting belong to the user logged in
+async function canUserDeleteBlogs() {
+  const filter = this.getFilter();
+  const blogsFound = await Blog.countDocuments(filter);
+  if (filter._id.$in.length !== blogsFound) {
+    const err = new Error("Unauthorised to delete specified blog ids");
+    err.name = "ValidationError";
+    throw err;
+  }
+}
+
+async function deleteCommentsFromAllBlogs() {
+  const filter = this.getFilter();
+  const blogIds = filter._id.$in;
+  for (let blog of blogIds) {
+    await Comment.deleteMany({ blog });
+  }
+}
+
 blogSchema.post("save", addBlogToUser);
 blogSchema.post("findOneAndDelete", deleteBlogFromUser);
 blogSchema.post("findOneAndDelete", deleteCommentsFromBlog);
+
+blogSchema.pre("deleteMany", canUserDeleteBlogs);
+blogSchema.pre("deleteMany", deleteAllBlogsFromUser);
+blogSchema.pre("deleteMany", deleteCommentsFromAllBlogs);
 
 blogSchema.post("save", withUserAndComments);
 blogSchema.post("findOneAndUpdate", withUserAndComments);

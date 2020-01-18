@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import Skeleton from "react-loading-skeleton";
 import { ReactComponent as NextIcon } from "../../icons/right-chevron.svg";
 import { ReactComponent as PrevIcon } from "../../icons/left-chevron.svg";
 
@@ -64,7 +65,29 @@ const PageLink = ({ children, onClick, value, isActive, disabled }) => {
   );
 };
 
-const PagerView = ({ onClick, currentPage, lastPage, maxNavPages = 5 }) => {
+const PagerView = ({
+  onClick,
+  currentPage,
+  lastPage,
+  maxNavPages = 5,
+  pending,
+  className
+}) => {
+  if (pending) {
+    const itemWidths = [70, ...Array(3).fill(40), 70];
+    return (
+      <nav className={className}>
+        <List>
+          {itemWidths.map((width, i) => (
+            <ListItem key={i}>
+              <Skeleton width={`${width}px`} height="40px" />
+            </ListItem>
+          ))}
+        </List>
+      </nav>
+    );
+  }
+
   currentPage = Math.max(Math.min(lastPage, currentPage), 1); // clamp between [1, lastPage]
   let pageStart = 1;
   if (lastPage > maxNavPages && currentPage >= maxNavPages) {
@@ -77,13 +100,12 @@ const PagerView = ({ onClick, currentPage, lastPage, maxNavPages = 5 }) => {
       pageStart = lastPage - maxNavPages + 1;
     }
   }
-
   const pages = Array(lastPage > maxNavPages ? maxNavPages : lastPage)
     .fill()
     .map((_, i) => pageStart + i);
 
   return (
-    <nav>
+    <nav className={className}>
       <List>
         <PageLink onClick={onClick} value={1} disabled={currentPage === 1}>
           <span>First</span>
@@ -108,14 +130,14 @@ const PagerView = ({ onClick, currentPage, lastPage, maxNavPages = 5 }) => {
         <PageLink
           onClick={onClick}
           value={currentPage + 1}
-          disabled={currentPage === lastPage}
+          disabled={lastPage === 0 || currentPage === lastPage}
         >
           <StyledNextIcon />
         </PageLink>
         <PageLink
           onClick={onClick}
           value={lastPage}
-          disabled={currentPage === lastPage}
+          disabled={lastPage === 0 || currentPage === lastPage}
         >
           <span>Last</span>
         </PageLink>

@@ -1,19 +1,16 @@
 import * as actionTypes from "../constants/actionTypes";
-import { blogListSchema, blogSchema } from "../schemas";
+import { blogListSchema, blogSchema, commentListSchema } from "../schemas";
 import { setNotification, setErrorNotification } from "./notificationActions";
 import { httpAction } from "./index";
+import { setPageSearchParams } from "./utils";
 
-export const fetchBlogs = ({ page = 1, limit = 10, sort } = { limit: 10 }) => {
-  page = parseInt(page) || 1;
-  const params = new URLSearchParams();
-  params.set("offset", (page - 1) * limit);
-  params.set("limit", limit);
-  sort && params.set("sort", sort);
+export const fetchBlogs = ({ page, limit, sort, userId }) => {
+  const [data, params] = setPageSearchParams({ page, limit, sort, userId });
   return httpAction({
     type: actionTypes.FETCH_BLOGS_REQUEST,
     url: `/api/blogs?${params}`,
     schema: blogListSchema,
-    data: { page, limit, sort }
+    data
   });
 };
 
@@ -55,6 +52,25 @@ export const deleteBlog = (id, userId, history) =>
     onFail: err => setErrorNotification("Failed to delete blog", err)
   });
 
+export const deleteBlogs = (ids, userId, history) =>
+  httpAction({
+    type: actionTypes.DELETE_BLOGS_REQUEST,
+    url: "/api/blogs",
+    method: "DELETE",
+    payload: {
+      ids
+    },
+    data: {
+      ids,
+      userId
+    },
+    onSuccess: () => dispatch => {
+      history.push(`/users/${userId}`);
+      dispatch(setNotification("Deleted blogs"));
+    },
+    onFail: err => setErrorNotification("Failed to delete blogs", err)
+  });
+
 export const likeBlog = blog =>
   httpAction({
     type: actionTypes.LIKE_BLOG_REQUEST,
@@ -68,7 +84,7 @@ export const likeBlog = blog =>
     onFail: err => setErrorNotification("Problem liking blog", err)
   });
 
-export const addComment = (blogId, comment) =>
+export const addComment = (blogId, comment, history) =>
   httpAction({
     type: actionTypes.ADD_COMMENT_REQUEST,
     method: "POST",
@@ -79,6 +95,24 @@ export const addComment = (blogId, comment) =>
     data: {
       blogId
     },
-    onSuccess: () => setNotification("Comment added"),
+    onSuccess: () => dispatch => {
+      history.push(`/blogs/${blogId}`);
+      dispatch(setNotification("Comment added"));
+    },
     onFail: err => setErrorNotification("Failed to add comment", err)
   });
+
+export const fetchComments = ({ blogId, page, limit, sort }) => {
+  const [data, params] = setPageSearchParams({ page, limit, sort });
+  return httpAction({
+    type: actionTypes.FETCH_COMMENTS_REQUEST,
+    method: "GET",
+    url: `/api/blogs/${blogId}/comments?${params}`,
+    schema: commentListSchema,
+    data: {
+      blogId,
+      ...data
+    },
+    onFail: err => setErrorNotification("Failed to fetch comments", err)
+  });
+};

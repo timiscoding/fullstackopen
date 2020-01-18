@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import styled from "styled-components";
+import { Helmet } from "react-helmet";
 import routes from "../../routes";
 import Header from "../Header";
 import Footer from "../Footer";
@@ -30,6 +31,7 @@ const Page = styled.div`
 function App() {
   return (
     <Router>
+      <Helmet defaultTitle="BlogList" titleTemplate="%s | BlogList"></Helmet>
       <Header />
       <Page>
         <Content>

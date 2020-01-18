@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled, { css } from "styled-components";
 import onClickOutside from "react-onclickoutside";
+import PropTypes from "prop-types";
 import { ReactComponent as DownChevronIcon } from "../../icons/down-chevron.svg";
 import { ReactComponent as UpChevronIcon } from "../../icons/up-chevron.svg";
 
@@ -152,12 +153,8 @@ const DropdownView = ({
       onKeyDown={handleKeyDown}
     >
       <Title>
-        {selected !== undefined ? options[selected].title : defaultTitle}
-        {listOpen ? (
-          <StyledDownChevronIcon as={UpChevronIcon} />
-        ) : (
-          <StyledDownChevronIcon />
-        )}
+        {options?.[selected]?.title ?? defaultTitle}
+        <StyledDownChevronIcon as={listOpen && UpChevronIcon} />
       </Title>
       {listOpen && (
         <List>
@@ -184,3 +181,16 @@ DropdownView.prototype = {};
 export default onClickOutside(DropdownView, {
   handleClickOutside: () => DropdownView.handleClickOutside
 });
+
+DropdownView.propTypes = {
+  className: PropTypes.string,
+  defaultTitle: PropTypes.string,
+  options: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired
+    })
+  ),
+  onChange: PropTypes.func,
+  defaultValue: PropTypes.string
+};

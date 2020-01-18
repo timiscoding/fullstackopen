@@ -3,6 +3,7 @@ import { combineReducers } from "redux";
 import produce from "immer";
 import union from "lodash/union";
 import uniq from "lodash/uniq";
+import without from "lodash/without";
 
 const addUsers = (state, action) => {
   const { response } = action;
@@ -15,14 +16,26 @@ const addUsers = (state, action) => {
   };
 };
 
-const deleteBlogFromUser = produce((state, action) => {
-  const { data } = action;
-  const { userId, id: blogId } = data;
+const addUser = produce((state, action) => {
+  const { response } = action;
+  const userId = response.result;
+  const user = response.entities.users[userId];
+  state[userId] = { ...state[userId], ...user };
+});
 
-  const blogList = state[userId].blogs.filter(id => id !== blogId);
-  if (blogList.length) {
-    state[userId].blogs = blogList;
+const addCurrentUser = produce((state, action) => {
+  const { user } = action.response;
+  state[user.id] = { ...user };
+});
+
+const deleteBlogsFromUser = produce((state, action) => {
+  const { data } = action;
+  let { userId, id, ids } = data;
+
+  if (id) {
+    ids = [id];
   }
+  state[userId].blogs = without(state[userId].blogs, ...ids);
 });
 
 const addAllUsersFromBlogList = (state, action) => {
@@ -31,6 +44,9 @@ const addAllUsersFromBlogList = (state, action) => {
   // manually get it from the entities.users object
   const { response } = action;
   const { users } = response.entities || response.items.entities;
+  if (!users) {
+    return state;
+  }
   return union(state, Object.keys(users));
 };
 
@@ -48,10 +64,14 @@ const byId = (state = {}, action) => {
     case actionTypes.FETCH_BLOGS_SUCCESS:
     case actionTypes.FETCH_BLOG_SUCCESS:
     case actionTypes.FETCH_USERS_SUCCESS:
-    case actionTypes.FETCH_USER_SUCCESS:
       return addUsers(state, action);
+    case actionTypes.FETCH_USER_SUCCESS:
+      return addUser(state, action);
+    case actionTypes.LOGIN_SUCCESS:
+      return addCurrentUser(state, action);
     case actionTypes.DELETE_BLOG_SUCCESS:
-      return deleteBlogFromUser(state, action);
+    case actionTypes.DELETE_BLOGS_SUCCESS:
+      return deleteBlogsFromUser(state, action);
     case actionTypes.ADD_BLOG_SUCCESS:
       return addBlogToUser(state, action);
     default:
@@ -66,9 +86,11 @@ const allIds = (state = [], action) => {
     case actionTypes.ADD_BLOG_SUCCESS:
       return addAllUsersFromBlogList(state, action);
     case actionTypes.FETCH_USERS_SUCCESS:
-      return [...action.response.result];
+      return [...action.response.items.result];
     case actionTypes.FETCH_USER_SUCCESS:
       return uniq([...state, action.response.result]);
+    case actionTypes.LOGIN_SUCCESS:
+      return uniq([...state, action.response.user.id]);
     default:
       return state;
   }

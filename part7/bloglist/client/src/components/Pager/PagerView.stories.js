@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { action } from "@storybook/addon-actions";
-import { withKnobs, number } from "@storybook/addon-knobs";
+import { withKnobs, number, boolean } from "@storybook/addon-knobs";
 import Pager from "./PagerView";
 
 export default {
@@ -46,6 +46,7 @@ export const navOnly = () => (
     currentPage={number("Current page", 1)}
     lastPage={number("Last page", 6)}
     maxNavPages={number("Max nav pages", 5)}
+    pending={boolean("pending")}
   />
 );
 

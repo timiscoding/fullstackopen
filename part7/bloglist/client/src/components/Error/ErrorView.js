@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 
 const ErrorView = ({ error }) => {
   if (!error) return null;
-
   const { status, message } = error;
   return (
     <div>

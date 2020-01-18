@@ -2,7 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { ellipsis } from "polished";
+import { ellipsis, clearFix } from "polished";
+import Skeleton from "react-loading-skeleton";
 import * as propTypes from "../../constants/propTypes";
 import { ReactComponent as LikeIcon } from "../../icons/like.svg";
 import { ReactComponent as LinkIcon } from "../../icons/link.svg";
@@ -120,13 +121,61 @@ const StyledCommentIcon = styled(CommentIcon)`
   margin-left: 5px;
 `;
 
-const BlogView = ({ blog, onActions, pending }) => {
-  const timestamp = blog.createdAt;
+const Creator = styled.span`
+  &:before {
+    content: "added by ";
+  }
+`;
+
+const BlogWrapper = styled.div`
+  ${clearFix()}
+`;
+
+const shorten = title =>
+  title.length > 100 ? title.slice(0, 100) + "..." : title;
+
+const BlogSkeleton = () => (
+  <Wrapper>
+    <BlogWrapper>
+      <LikesSkeleton />
+      <BlogInfoSkeleton />
+    </BlogWrapper>
+    <MetadataSkeleton />
+  </Wrapper>
+);
+
+const BlogInfoSkeleton = () => (
+  <BlogInfo>
+    <Skeleton width="75%" />
+    <div style={{ width: "30%" }}>
+      <Skeleton count={2} />
+    </div>
+  </BlogInfo>
+);
+
+const LikesSkeleton = () => (
+  <Likes>
+    <Skeleton width="75%" />
+    <Skeleton width="1.3em" height="1.3em" />
+  </Likes>
+);
+
+const MetadataSkeleton = () => (
+  <Metadata>
+    <Skeleton width="40%" />
+  </Metadata>
+);
+
+const BlogView = ({ blog, onActions = {}, pending }) => {
+  if (pending.blog) {
+    return <BlogSkeleton />;
+  }
+  const { likes, title, author, url, user, createdAt, commentCount } = blog;
   return (
     <Wrapper>
-      <div>
+      <BlogWrapper>
         <Likes>
-          <div>{formatNum(blog.likes)}</div>
+          <div>{formatNum(likes)}</div>
           {onActions.like ? (
             <LikeButton onClick={onActions.like} disabled={pending.like}>
               <StyledLikeIcon />
@@ -136,37 +185,32 @@ const BlogView = ({ blog, onActions, pending }) => {
           )}
         </Likes>
         <BlogInfo>
-          <Title>
-            {blog.title.length > 100
-              ? blog.title.slice(0, 100) + "..."
-              : blog.title}
-          </Title>
-          <Author>{blog.author}</Author>
-          <StyledLink href={blog.url}>
+          <Title>{shorten(title)}</Title>
+          <Author>{author}</Author>
+          <StyledLink href={url}>
             <StyledLinkIcon />
-            {blog.url}
+            {url}
           </StyledLink>
         </BlogInfo>
-      </div>
+      </BlogWrapper>
       <Metadata>
         <span>
-          {timestamp ? (
-            <time dateTime={timestamp}>{formatTimestamp(timestamp)}</time>
+          {createdAt ? (
+            <time dateTime={createdAt}>{formatTimestamp(createdAt)}</time>
           ) : (
             "Time unknown"
           )}
         </span>
         <StyledCircleIcon />
-        <span>
-          added by{" "}
-          {blog.user.username ? (
-            <Link to={`/users/${blog.user.id}`}>{blog.user.username}</Link>
+        <Creator>
+          {user ? (
+            <Link to={`/users/${user.id}`}>{user.username}</Link>
           ) : (
-            "unknown creator"
+            <Skeleton width={100} />
           )}
-        </span>
+        </Creator>
         <StyledCircleIcon />
-        <span>{formatNum(blog.comments.length)}</span>
+        <span>{formatNum(commentCount)}</span>
         <StyledCommentIcon />
       </Metadata>
       {onActions.delete && (

@@ -24,8 +24,7 @@ loginRouter.post("/", async (req, res, next) => {
 
     res.json({
       token: makeToken(payload),
-      name: user.name,
-      username: user.username
+      user
     });
   } catch (err) {
     next(err);

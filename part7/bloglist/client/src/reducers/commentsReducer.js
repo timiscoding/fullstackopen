@@ -1,11 +1,10 @@
+import { combineReducers } from "redux";
 import produce from "immer";
 import * as actionTypes from "../constants/actionTypes";
+import omitBy from "lodash/omitBy";
 
 const setComments = (state, action) => {
-  // data may be supplied from fetching blogList (namespaced under 'items')
-  // or fetching single blog so no namespacing
-  const { comments } =
-    action.response.entities || action.response.items.entities;
+  const { comments } = action.response.items.entities;
   return {
     ...state,
     ...comments
@@ -14,21 +13,33 @@ const setComments = (state, action) => {
 
 const addComment = produce((state, action) => {
   const { response } = action;
-  const { id, body, createdAt } = response;
-  state[id] = { body, createdAt };
+  const { id, body, createdAt, blog } = response;
+  state[id] = { body, createdAt, blog };
 });
 
-const commentsReducer = (state = {}, action) => {
+const deleteComments = (state, action) => {
+  let { id, ids } = action.data;
+  if (id) ids = [id];
+  return omitBy(state, comment => ids.includes(comment.blog));
+};
+
+const byId = (state = {}, action) => {
   switch (action.type) {
-    case actionTypes.FETCH_BLOGS_SUCCESS:
-    case actionTypes.FETCH_BLOG_SUCCESS:
+    case actionTypes.FETCH_COMMENTS_SUCCESS:
       return setComments(state, action);
     case actionTypes.ADD_COMMENT_SUCCESS:
       return addComment(state, action);
+    case actionTypes.DELETE_BLOG_SUCCESS:
+    case actionTypes.DELETE_BLOGS_SUCCESS:
+      return deleteComments(state, action);
     default:
       return state;
   }
 };
+
+const commentsReducer = combineReducers({
+  byId
+});
 
 export default commentsReducer;
 
