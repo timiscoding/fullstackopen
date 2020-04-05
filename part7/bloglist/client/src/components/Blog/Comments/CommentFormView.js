@@ -1,70 +1,57 @@
 import React, { useRef } from "react";
 import PropTypes from "prop-types";
-import styled from "styled-components";
-
-import { useFormState, useInputErrorHeights } from "../../../hooks";
-import { required } from "../../../hooks/utils";
-import { InputError, Fieldset, InputDiv } from "../../Input";
-import PrimaryButton from "../../PrimaryButton";
+import styled from "styled-components/macro";
+import FormBase from "../../Form";
+import * as validators from "../../Form/validators";
+import Button from "../../Button";
+import Row from "../../Row";
 import { ReactComponent as CommentIcon } from "../../../icons/message.svg";
 
-const Textarea = styled.textarea`
-  width: 600px;
-  height: 70px;
-  border: 2px solid ${({ theme }) => theme.greyLight};
-  font-family: inherit;
-`;
-
-const StyledCommentIcon = styled(CommentIcon)`
-  width: 1em;
-  height: 1em;
-  fill: white;
-  margin-right: 5px;
-  vertical-align: middle;
+const Form = styled(FormBase)`
+  padding: 10px;
 `;
 
 const CommentForm = ({ onComment, pending }) => {
   const formRef = useRef();
-  const errorRefs = {
-    comment: useRef()
-  };
-  const [{ errors, submit, clear, values }, { textarea }] = useFormState(
-    formRef
-  );
-  const errorHeights = useInputErrorHeights(errorRefs, errors);
 
-  const handleSubmit = async event => {
-    event.preventDefault();
-    const action = await onComment(values.comment);
+  const handleSubmit = async ({ comment }) => {
+    const action = await onComment(comment);
     if (action.type.endsWith("SUCCESS")) {
-      clear();
+      formRef.current.clear();
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} ref={formRef}>
-      <Fieldset disabled={pending}>
-        <InputDiv>
-          <Textarea
-            {...textarea("comment", required())}
-            placeholder="Comment on this blog"
-          />
-          <InputError ref={errorRefs.comment} height={errorHeights.comment}>
-            {errors.comment}
-          </InputError>
-        </InputDiv>
-        <PrimaryButton onClick={submit}>
-          <StyledCommentIcon />
-          {pending ? "Submitting..." : "Add comment"}
-        </PrimaryButton>
-      </Fieldset>
-    </form>
+    <Form onSubmit={handleSubmit} ref={formRef} pending={pending}>
+      {({ errors, validity, submit }, { textarea }) => (
+        <>
+          <Form.Group>
+            <Form.Control
+              {...textarea("comment", validators.required())}
+              valid={validity.comment}
+              error={errors.comment}
+              placeholder="Comment on this blog"
+            />
+          </Form.Group>
+          <Row cols={1}>
+            <Button
+              onClick={submit}
+              Icon={CommentIcon}
+              appearance="primary"
+              pending={pending}
+            >
+              Add comment
+            </Button>
+          </Row>
+        </>
+      )}
+    </Form>
   );
 };
 
 CommentForm.propTypes = {
   onComment: PropTypes.func.isRequired,
-  pending: PropTypes.bool.isRequired
+  pending: PropTypes.bool
 };
 
 export default CommentForm;

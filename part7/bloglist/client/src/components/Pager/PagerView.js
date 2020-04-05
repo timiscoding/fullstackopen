@@ -1,69 +1,6 @@
-import React from "react";
-import styled from "styled-components";
-import Skeleton from "react-loading-skeleton";
-import { ReactComponent as NextIcon } from "../../icons/right-chevron.svg";
-import { ReactComponent as PrevIcon } from "../../icons/left-chevron.svg";
-
-const StyledNextIcon = styled(NextIcon)`
-  width: 1em;
-  height: 1em;
-  vertical-align: sub;
-  fill: ${({ theme, disabled }) =>
-    disabled ? theme.greyLight : theme.secondaryDark};
-`;
-
-const Link = styled.a`
-  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
-  color: ${({ isActive, disabled, theme }) =>
-    isActive ? "black" : disabled ? theme.greyLight : null};
-  border: ${({ isActive, theme }) =>
-    !isActive ? `1px solid ${theme.greyLight}` : "none"};
-  display: inline-block;
-  padding: 10px;
-  &:hover {
-    transition: border 0.5s;
-    text-decoration: none;
-    border: ${({ theme, isActive }) =>
-      !isActive ? `1px solid ${theme.primary}` : "none"};
-  }
-  &:active {
-    text-decoration: none;
-    background-color: ${({ theme, isActive }) =>
-      !isActive && theme.primaryLight};
-    color: ${({ theme, isActive }) => !isActive && theme.secondaryDark};
-  }
-`;
-
-const ListItem = styled.li`
-  list-style-type: none;
-  text-align: center;
-  &:not(:first-child) {
-    margin-left: 5px;
-  }
-`;
-
-const List = styled.ul`
-  padding: 0;
-  margin: 0;
-  display: flex;
-  justify-content: center;
-`;
-
-const PageLink = ({ children, onClick, value, isActive, disabled }) => {
-  const handleClick = event => {
-    event.preventDefault();
-    onClick(value);
-  };
-  const props = !isActive ? { href: "#", onClick: handleClick } : {};
-  const child = React.Children.only(children);
-  return (
-    <ListItem>
-      <Link {...props} isActive={isActive} disabled={disabled}>
-        {React.cloneElement(child, { disabled })}
-      </Link>
-    </ListItem>
-  );
-};
+import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { ListItem, Link, Page, List, NextIcon, PrevIcon } from "./styled";
 
 const PagerView = ({
   onClick,
@@ -73,77 +10,112 @@ const PagerView = ({
   pending,
   className
 }) => {
-  if (pending) {
-    const itemWidths = [70, ...Array(3).fill(40), 70];
-    return (
-      <nav className={className}>
-        <List>
-          {itemWidths.map((width, i) => (
-            <ListItem key={i}>
-              <Skeleton width={`${width}px`} height="40px" />
-            </ListItem>
-          ))}
-        </List>
-      </nav>
-    );
-  }
+  const [mobileWidth, setMobileWidth] = useState(false);
+  useEffect(() => {
+    const mediaQueryList = window.matchMedia("(max-width: 768px)");
+    const handleWidthChange = mql => {
+      if (mql.matches) {
+        setMobileWidth(true);
+      } else {
+        setMobileWidth(false);
+      }
+    };
+    mediaQueryList.addListener(handleWidthChange);
+    handleWidthChange(mediaQueryList);
+    return () => {
+      mediaQueryList.removeListener(handleWidthChange);
+    };
+  }, []);
 
-  currentPage = Math.max(Math.min(lastPage, currentPage), 1); // clamp between [1, lastPage]
-  let pageStart = 1;
-  if (lastPage > maxNavPages && currentPage >= maxNavPages) {
-    const pagesAfter = Math.floor(maxNavPages / 2); // pages to show after currentPage
-    const pagesLeft = lastPage - currentPage;
-    if (pagesLeft >= pagesAfter) {
-      const pagesBefore = maxNavPages & 1 ? pagesAfter : pagesAfter - 1;
-      pageStart = currentPage - pagesBefore;
-    } else {
-      pageStart = lastPage - maxNavPages + 1;
+  const PageLink = ({ children, value, disabled }) => {
+    const handleClick = event => {
+      event.preventDefault();
+      onClick(value);
+    };
+    return (
+      <ListItem>
+        <Link href="#" onClick={handleClick} disabled={disabled}>
+          {children}
+        </Link>
+      </ListItem>
+    );
+  };
+
+  const renderPageNumbers = () => {
+    const CurrentPage = () => (
+      <ListItem>
+        <Page>{currentPage}</Page>
+      </ListItem>
+    );
+    if (pending) {
+      return <PageLink disabled>...</PageLink>;
     }
-  }
-  const pages = Array(lastPage > maxNavPages ? maxNavPages : lastPage)
-    .fill()
-    .map((_, i) => pageStart + i);
+    if (mobileWidth) return <CurrentPage />;
+    currentPage = Math.max(Math.min(lastPage, currentPage), 1); // clamp between [1, lastPage]
+    let pageStart = 1;
+    if (lastPage > maxNavPages && currentPage >= maxNavPages) {
+      const pagesAfter = Math.floor(maxNavPages / 2); // pages to show after currentPage
+      const pagesLeft = lastPage - currentPage;
+      if (pagesLeft >= pagesAfter) {
+        const pagesBefore = maxNavPages & 1 ? pagesAfter : pagesAfter - 1;
+        pageStart = currentPage - pagesBefore;
+      } else {
+        pageStart = lastPage - maxNavPages + 1;
+      }
+    }
+    const pages = Array(lastPage > maxNavPages ? maxNavPages : lastPage)
+      .fill()
+      .map((_, i) => pageStart + i);
+    return pages.map((pageNum, i) =>
+      currentPage !== pageNum ? (
+        <PageLink key={i} onClick={onClick} value={pageNum}>
+          {pageNum}
+        </PageLink>
+      ) : (
+        <CurrentPage key="currentPage" />
+      )
+    );
+  };
 
   return (
     <nav className={className}>
       <List>
-        <PageLink onClick={onClick} value={1} disabled={currentPage === 1}>
-          <span>First</span>
+        <PageLink key="first" value={1} disabled={pending || currentPage === 1}>
+          First
         </PageLink>
         <PageLink
-          onClick={onClick}
+          key="previous"
           value={currentPage - 1}
-          disabled={currentPage === 1}
+          disabled={pending || currentPage === 1}
         >
-          <StyledNextIcon as={PrevIcon} />
+          <PrevIcon />
         </PageLink>
-        {pages.map((pageNum, i) => (
-          <PageLink
-            key={i}
-            onClick={onClick}
-            value={pageNum}
-            isActive={currentPage === pageNum}
-          >
-            <span>{pageNum}</span>
-          </PageLink>
-        ))}
+        {renderPageNumbers()}
         <PageLink
-          onClick={onClick}
+          key="next"
           value={currentPage + 1}
-          disabled={lastPage === 0 || currentPage === lastPage}
+          disabled={pending || lastPage === 0 || currentPage === lastPage}
         >
-          <StyledNextIcon />
+          <NextIcon />
         </PageLink>
         <PageLink
-          onClick={onClick}
+          key="last"
           value={lastPage}
-          disabled={lastPage === 0 || currentPage === lastPage}
+          disabled={pending || lastPage === 0 || currentPage === lastPage}
         >
-          <span>Last</span>
+          Last
         </PageLink>
       </List>
     </nav>
   );
+};
+
+PagerView.propTypes = {
+  onClick: PropTypes.func,
+  currentPage: PropTypes.number,
+  lastPage: PropTypes.number,
+  maxNavPages: PropTypes.number,
+  pending: PropTypes.bool
 };
 
 export default PagerView;

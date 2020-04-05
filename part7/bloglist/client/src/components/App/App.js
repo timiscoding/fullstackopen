@@ -1,50 +1,34 @@
 import React from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
-import styled from "styled-components";
 import { Helmet } from "react-helmet";
 import routes from "../../routes";
 import Header from "../Header";
-import Footer from "../Footer";
-
-const Content = styled.div`
-  max-width: 980px;
-  width: 100%;
-  border: 1px solid transparent;
-  margin: 0 auto;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-`;
-
-const Page = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  &:before {
-    content: "";
-    min-height: 45px;
-    display: block;
-  }
-`;
+import { Content, ContentInner, Page, StyledFooter } from "./styled";
 
 function App() {
   return (
     <Router>
-      <Helmet defaultTitle="BlogList" titleTemplate="%s | BlogList"></Helmet>
+      <Helmet defaultTitle="BlogList" titleTemplate="%s | BlogList">
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1"
+        ></meta>
+      </Helmet>
       <Header />
       <Page>
         <Content>
-          {routes.map((route, index) => (
-            <Route
-              key={index}
-              path={route.path}
-              component={route.main}
-              exact={route.exact}
-            />
-          ))}
+          <ContentInner>
+            {routes.map((route, index) => (
+              <Route
+                key={index}
+                path={route.path}
+                component={route.main}
+                exact={route.exact}
+              />
+            ))}
+          </ContentInner>
         </Content>
-        <Footer />
+        <StyledFooter />
       </Page>
     </Router>
   );

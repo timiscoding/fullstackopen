@@ -5,22 +5,7 @@ import Pager from "./PagerView";
 
 export default {
   title: "Pager",
-  decorators: [
-    withKnobs,
-    storyFn => (
-      <div
-        style={{
-          width: 500,
-          padding: 20,
-          border: "1px solid lightgrey",
-          resize: "horizontal",
-          overflow: "auto"
-        }}
-      >
-        {storyFn()}
-      </div>
-    )
-  ]
+  decorators: [withKnobs],
 };
 
 const PagerWrapper = ({ children }) => {
@@ -29,7 +14,7 @@ const PagerWrapper = ({ children }) => {
   const lastPage = Math.ceil(letters.length / itemsPerPage);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageItems, setPageItems] = useState(letters.slice(0, itemsPerPage));
-  const handleClick = page => {
+  const handleClick = (page) => {
     action(`Clicked page ${page}`);
     setCurrentPage(page);
     const offset = (page - 1) * itemsPerPage; // page starts from 1
@@ -40,15 +25,18 @@ const PagerWrapper = ({ children }) => {
   return children({ onClick: handleClick, currentPage, lastPage, pageItems });
 };
 
-export const navOnly = () => (
-  <Pager
-    onClick={action("Clicked on page")}
-    currentPage={number("Current page", 1)}
-    lastPage={number("Last page", 6)}
-    maxNavPages={number("Max nav pages", 5)}
-    pending={boolean("pending")}
-  />
-);
+export const navOnly = () => {
+  const pending = boolean("pending", false);
+  return (
+    <Pager
+      onClick={action("Clicked on page")}
+      currentPage={!pending ? number("Current page", 1) : null}
+      lastPage={!pending ? number("Last page", 6) : null}
+      maxNavPages={number("Max nav pages", 5)}
+      pending={pending}
+    />
+  );
+};
 
 export const withPageItems = () => (
   <PagerWrapper>

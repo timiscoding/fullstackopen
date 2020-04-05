@@ -1,31 +1,26 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
-import styled from "styled-components";
-import { clearFix } from "polished";
 import { addComment, fetchComments } from "../../../actions";
 import * as actionTypes from "../../../constants/actionTypes";
 import * as selectors from "../../../reducers";
 import CommentForm from "./CommentFormView";
 import CommentList from "./CommentListView";
 import Pager from "../../Pager";
-import Dropdown from "../../Dropdown";
+import AddIcon from "../../../icons/add.svg";
+import {
+  Heading,
+  Actions,
+  SortDropdown,
+  Toggleable
+} from "./styled/CommentsContainer";
 
 const SORT_OPTIONS = [
-  { value: "createdAt-desc", title: "Sort by: Newest first" },
-  { value: "createdAt-asc", title: "Sort by: Oldest first" }
+  { value: "createdAt-desc", title: "By newest first" },
+  { value: "createdAt-asc", title: "By oldest First" }
 ];
 
 const SORT_BY_NEWEST = SORT_OPTIONS[0].value;
-
-const SortDropdown = styled(Dropdown)`
-  --dd-width: 200px;
-  float: right;
-`;
-
-const SortWrapper = styled.div`
-  ${clearFix()}
-`;
 
 const CommentsContainer = ({
   isCommenting,
@@ -37,6 +32,7 @@ const CommentsContainer = ({
   history,
   location
 }) => {
+  const commentFormRef = useRef();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const page = params.get("page") || 1;
@@ -59,9 +55,8 @@ const CommentsContainer = ({
   const pending = isFetching || !page?.currentPage;
   return (
     <div>
-      <h3>Comments</h3>
-      <CommentForm onComment={handleComment} pending={isCommenting} />
-      <SortWrapper>
+      <Heading>Comments</Heading>
+      <Actions>
         <SortDropdown
           options={SORT_OPTIONS}
           onChange={sort => handleChange("sort", sort)}
@@ -69,7 +64,14 @@ const CommentsContainer = ({
             new URLSearchParams(location.search).get("sort") || SORT_BY_NEWEST
           }
         />
-      </SortWrapper>
+        <Toggleable
+          buttonLabel="Add comment"
+          buttonIcon={AddIcon}
+          ref={commentFormRef}
+        >
+          <CommentForm onComment={handleComment} pending={isCommenting} />
+        </Toggleable>
+      </Actions>
       <CommentList comments={page?.items} pending={pending} />
       <Pager
         currentPage={page?.currentPage}

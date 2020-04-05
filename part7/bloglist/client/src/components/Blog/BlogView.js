@@ -1,138 +1,32 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { ellipsis, clearFix } from "polished";
 import Skeleton from "react-loading-skeleton";
 import * as propTypes from "../../constants/propTypes";
-import { ReactComponent as LikeIcon } from "../../icons/like.svg";
-import { ReactComponent as LinkIcon } from "../../icons/link.svg";
-import { ReactComponent as GarbageIcon } from "../../icons/garbage.svg";
-import { ReactComponent as CircleIcon } from "../../icons/filled-circle.svg";
-import { ReactComponent as CommentIcon } from "../../icons/message.svg";
+import FadeOverflow from "../FadeOverflow";
+import {
+  Wrapper,
+  BlogWrapper,
+  Title,
+  Author,
+  LinkIcon,
+  Likes,
+  Metadata,
+  BlogInfo,
+  BlogLink,
+  GarbageIcon,
+  Time,
+  CircleIcon,
+  Creator,
+  CommentIcon,
+  LikeButton,
+  DeleteButton
+} from "./styled";
 import Button from "../Button";
+import Modal from "../Modal";
+import Row from "../Row";
+import { useModal } from "../../hooks";
 import { formatTimestamp, formatNum } from "../utils";
-
-const Likes = styled.div`
-  margin-right: 10px;
-  font-size: 1.6em;
-  text-align: center;
-  width: 70px;
-  display: inline-block;
-  float: left;
-`;
-
-const BlogInfo = styled.div`
-  width: calc(100% - 80px);
-  display: inline-block;
-`;
-
-const StyledLikeIcon = styled(LikeIcon)`
-  width: 1.3em;
-  height: 1.3em;
-  fill: ${({ theme }) => theme.blue};
-`;
-
-const StyledLinkIcon = styled(LinkIcon)`
-  width: 1em;
-  height: 1em;
-  margin-right: 5px;
-  vertical-align: middle;
-`;
-
-const StyledGarbageIcon = styled(GarbageIcon)`
-  width: 1.5em;
-  height: 1.5em;
-  fill: ${({ theme }) => theme.red};
-`;
-
-const StyledCircleIcon = styled(CircleIcon)`
-  width: 0.5em;
-  height: 0.5em;
-  vertical-align: middle;
-  fill: ${({ theme }) => theme.greyLight};
-  margin: 0 7px;
-`;
-
-const Title = styled.div`
-  font-weight: 700;
-  text-transform: capitalize;
-`;
-
-const Author = styled.div`
-  font-size: 0.8em;
-  margin-top: 5px;
-  min-width: 100%;
-  text-transform: capitalize;
-  ${ellipsis("100%")};
-  &:before {
-    content: "by ";
-  }
-`;
-
-const Metadata = styled.div`
-  color: ${({ theme }) => theme.greyDark};
-  font-size: 0.8em;
-  margin-top: 5px;
-`;
-
-const StyledLink = styled.a`
-  ${ellipsis("100%")};
-`;
-
-const LikeButton = styled(Button)`
-  ${({ theme }) => `
-    --btn-border-color: ${theme.blue};
-    --btn-bg-color-hover: ${theme.blueLight};
-    --btn-bg-color-active: ${theme.blueDark};
-    padding: 5px;
-    &:hover svg {
-      fill: ${theme.fontLight};
-    }
-  `}
-`;
-
-const DeleteButton = styled(Button)`
-  ${({ theme }) => `
-    --btn-border-color: ${theme.red};
-    --btn-bg-color-hover: ${theme.redLight};
-    --btn-bg-color-active: ${theme.redDark};
-    padding: 5px;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    &:hover svg {
-      fill: ${theme.fontLight};
-    }
-  `}
-`;
-
-const Wrapper = styled.div`
-  position: relative;
-  padding: 5px;
-  margin-top: 20px;
-  border: 1px solid ${({ theme }) => theme.greyDark};
-`;
-
-const StyledCommentIcon = styled(CommentIcon)`
-  height: 0.8em;
-  width: 0.8em;
-  fill: ${({ theme }) => theme.grey};
-  margin-left: 5px;
-`;
-
-const Creator = styled.span`
-  &:before {
-    content: "added by ";
-  }
-`;
-
-const BlogWrapper = styled.div`
-  ${clearFix()}
-`;
-
-const shorten = title =>
-  title.length > 100 ? title.slice(0, 100) + "..." : title;
 
 const BlogSkeleton = () => (
   <Wrapper>
@@ -145,8 +39,10 @@ const BlogSkeleton = () => (
 );
 
 const BlogInfoSkeleton = () => (
-  <BlogInfo>
-    <Skeleton width="75%" />
+  <BlogInfo style={{ width: "100%" }}>
+    <Title>
+      <Skeleton width="75%" />
+    </Title>
     <div style={{ width: "30%" }}>
       <Skeleton count={2} />
     </div>
@@ -156,7 +52,7 @@ const BlogInfoSkeleton = () => (
 const LikesSkeleton = () => (
   <Likes>
     <Skeleton width="75%" />
-    <Skeleton width="1.3em" height="1.3em" />
+    <Skeleton width="1.3em" height="1.3em" circle />
   </Likes>
 );
 
@@ -167,6 +63,11 @@ const MetadataSkeleton = () => (
 );
 
 const BlogView = ({ blog, onActions = {}, pending }) => {
+  const modals = useModal();
+  const handleDelete = () => {
+    onActions.delete();
+    modals.deleteBlogs.onClose();
+  };
   if (pending.blog) {
     return <BlogSkeleton />;
   }
@@ -176,48 +77,67 @@ const BlogView = ({ blog, onActions = {}, pending }) => {
       <BlogWrapper>
         <Likes>
           <div>{formatNum(likes)}</div>
-          {onActions.like ? (
-            <LikeButton onClick={onActions.like} disabled={pending.like}>
-              <StyledLikeIcon />
-            </LikeButton>
-          ) : (
-            <StyledLikeIcon />
-          )}
+          <LikeButton
+            onClick={() => onActions.like(blog)}
+            disabled={pending.like}
+          />
         </Likes>
         <BlogInfo>
-          <Title>{shorten(title)}</Title>
+          <Title>{title}</Title>
           <Author>{author}</Author>
-          <StyledLink href={url}>
-            <StyledLinkIcon />
-            {url}
-          </StyledLink>
+          <BlogLink href={url}>
+            <LinkIcon />
+            {new URL(url).hostname}
+          </BlogLink>
         </BlogInfo>
+        {onActions.delete && (
+          <DeleteButton
+            onClick={modals.deleteBlogs.onOpen}
+            disabled={pending.delete}
+            appearance="danger"
+            round
+          >
+            <GarbageIcon />
+          </DeleteButton>
+        )}
       </BlogWrapper>
-      <Metadata>
-        <span>
-          {createdAt ? (
-            <time dateTime={createdAt}>{formatTimestamp(createdAt)}</time>
-          ) : (
-            "Time unknown"
-          )}
-        </span>
-        <StyledCircleIcon />
-        <Creator>
-          {user ? (
-            <Link to={`/users/${user.id}`}>{user.username}</Link>
-          ) : (
-            <Skeleton width={100} />
-          )}
-        </Creator>
-        <StyledCircleIcon />
-        <span>{formatNum(commentCount)}</span>
-        <StyledCommentIcon />
-      </Metadata>
-      {onActions.delete && (
-        <DeleteButton onClick={onActions.delete} disabled={pending.delete}>
-          <StyledGarbageIcon />
-        </DeleteButton>
-      )}
+      <FadeOverflow>
+        <Metadata>
+          <Time>
+            {createdAt ? (
+              <time dateTime={createdAt}>{formatTimestamp(createdAt)}</time>
+            ) : (
+              "Time unknown"
+            )}
+          </Time>
+          <CircleIcon />
+          <Creator>
+            {user ? (
+              <Link to={`/users/${user.id}`}>{user.username}</Link>
+            ) : (
+              <Skeleton width={100} />
+            )}
+          </Creator>
+          <CircleIcon />
+          <span>{formatNum(commentCount)}</span>
+          <CommentIcon />
+        </Metadata>
+      </FadeOverflow>
+      <Modal
+        show={modals.deleteBlogs.show}
+        onClose={modals.deleteBlogs.onClose}
+      >
+        <Modal.Header>Confirm deletion</Modal.Header>
+        <Modal.Body>Are you sure?</Modal.Body>
+        <Modal.Footer>
+          <Row cols={2} justify="end">
+            <Button onClick={handleDelete} appearance="danger">
+              Delete
+            </Button>
+            <Button onClick={modals.deleteBlogs.onClose}>Cancel</Button>
+          </Row>
+        </Modal.Footer>
+      </Modal>
     </Wrapper>
   );
 };

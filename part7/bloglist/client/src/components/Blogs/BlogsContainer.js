@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import styled from "styled-components";
+import styled from "styled-components/macro";
+import { clearFix } from "polished";
 import { Helmet } from "react-helmet";
 import BlogList from "../BlogList";
 import Toggleable from "../Toggleable";
@@ -11,22 +12,14 @@ import { SortBlogsDropdown } from "../Dropdown";
 import { fetchBlogs, likeBlog } from "../../actions";
 import { getPending, getCurrentUser, getError, getPage } from "../../reducers";
 import * as actionTypes from "../../constants/actionTypes";
-import { ReactComponent as AddIcon } from "../../icons/add.svg";
-
-const StyledAddIcon = styled(AddIcon)`
-  width: 1.1em;
-  height: 1.1em;
-  fill: white;
-  vertical-align: middle;
-  margin-right: 5px;
-`;
+import AddIcon from "../../icons/add.svg";
 
 const StyledToggleable = styled(Toggleable)`
   margin-bottom: 10px;
 `;
 
-const StyledPager = styled(Pager)`
-  margin-bottom: 20px;
+const Actions = styled.div`
+  ${clearFix()}
 `;
 
 const BlogsContainer = ({
@@ -50,7 +43,7 @@ const BlogsContainer = ({
     setPageNum(page);
   }, [fetchBlogs, location]);
 
-  const handleLike = blog => {
+  const handleLike = async blog => {
     if (!currentUser) {
       history.push("/login");
       return;
@@ -71,37 +64,36 @@ const BlogsContainer = ({
   };
 
   if (error) return <Error error={error} />;
-  const pending = !page.currentPage || isFetchingBlogs;
+  const pending = !page.items || isFetchingBlogs;
   return (
     <>
       <Helmet>
         <title>{pageNum ? `Blogs - Page ${pageNum}` : "Blogs"}</title>
       </Helmet>
       <h2>Blogs</h2>
-      <div>
+      <Actions>
         <SortBlogsDropdown
           onChange={sort => handleChange("sort", sort)}
           defaultValue={new URLSearchParams(location.search).get("sort")}
         />
         {currentUser ? (
           <StyledToggleable
-            buttonLabel={() => (
-              <>
-                <StyledAddIcon />{" "}
-                <span style={{ fontSize: "1em" }}>Add Blog</span>
-              </>
-            )}
+            buttonLabel="Add blog"
+            buttonIcon={AddIcon}
             ref={blogFormRef}
           >
-            <BlogForm
-              blogAdded={() => blogFormRef.current.toggleVisible()}
-              pending={isAddingBlog}
-            />
+            {toggleableOpen => (
+              <BlogForm
+                blogAdded={() => blogFormRef.current.toggleVisible()}
+                pending={isAddingBlog}
+                toggleableOpen={toggleableOpen}
+              />
+            )}
           </StyledToggleable>
         ) : null}
-      </div>
+      </Actions>
       <BlogList blogs={page?.items} onLike={handleLike} pending={pending} />
-      <StyledPager
+      <Pager
         currentPage={page?.currentPage}
         lastPage={page?.lastPage}
         maxNavPages={6}

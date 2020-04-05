@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import styled, { keyframes } from "styled-components";
+import styled, { keyframes } from "styled-components/macro";
 import { rgba } from "polished";
 import { ReactComponent as LoopIcon } from "../../icons/loop.svg";
 

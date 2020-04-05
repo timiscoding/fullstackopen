@@ -1,98 +1,100 @@
 import React, { useRef, useEffect } from "react";
 import PropTypes from "prop-types";
-import styled from "styled-components";
-import { useFormState, useInputErrorHeights } from "../../../hooks";
-import { required } from "../../../hooks/utils";
+import styled from "styled-components/macro";
 import Button from "../../Button";
-import Input, { Label, InputError, InputDiv, Fieldset } from "../../Input";
+import Form from "../../Form";
+import * as validators from "../../Form/validators";
+import Row from "../../Row";
 
 const Wrapper = styled.div`
-  padding: 12px;
-  ${({ theme }) => `
-    --btn-color: ${theme.fontLight};
-    --btn-border-color: ${theme.green}
-    --btn-bg-color: ${theme.green};
-    --btn-fg-color-hover: ${theme.fontLight};
-    --btn-bg-color-hover: ${theme.greenLight};
-    --btn-bg-color-active: ${theme.greenDark};
-    `}
+  padding: 10px;
   & h3 {
     margin: 0;
+    margin-top: 10px;
   }
 `;
 
 const BlogFormView = ({ blogAdded, addBlog, pending, toggleableOpen }) => {
   const formRef = useRef();
-  const errorRefs = {
-    title: useRef(),
-    author: useRef(),
-    url: useRef()
-  };
-  const [{ validity, errors, clear, values, submit }, { text }] = useFormState(
-    formRef
-  );
-  const errorHeights = useInputErrorHeights(errorRefs, errors);
   useEffect(() => {
     if (toggleableOpen) {
-      formRef.current.elements.title.focus();
+      formRef.current.focus();
     }
   }, [toggleableOpen]);
 
-  const handleSubmit = async event => {
-    event.preventDefault();
-
+  const handleSubmit = async ({ title, author, url }) => {
+    url = url.trim();
+    if (!validators.isValidUrlScheme(url)) {
+      url = "http://" + url;
+    }
     const action = await addBlog({
-      title: values.title.trim(),
-      author: values.author.trim(),
-      url: values.url.trim()
+      title: title.trim(),
+      author: author.trim(),
+      url,
     });
-
     if (action.type.endsWith("SUCCESS")) {
-      clear();
+      formRef.current.clear();
       blogAdded();
     }
+  };
+  const handleClickClear = (event) => {
+    event.preventDefault();
+    formRef.current.clear();
+    formRef.current.focus();
   };
 
   return (
     <Wrapper>
       <h3>Create blog</h3>
-
-      <form onSubmit={handleSubmit} ref={formRef}>
-        <Fieldset disabled={pending}>
-          <InputDiv>
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              {...text("title", required())}
-              valid={validity.title}
-            />
-            <InputError ref={errorRefs.title} height={errorHeights.title}>
-              {errors.title}
-            </InputError>
-          </InputDiv>
-          <InputDiv>
-            <Label htmlFor="author">Author</Label>
-            <Input
-              id="author"
-              {...text("author", required())}
-              valid={validity.author}
-            />
-            <InputError ref={errorRefs.author} height={errorHeights.author}>
-              {errors.author}
-            </InputError>
-          </InputDiv>
-          <InputDiv>
-            <Label htmlFor="url">URL</Label>
-            <Input id="url" {...text("url", required())} valid={validity.url} />
-            <InputError ref={errorRefs.url} height={errorHeights.url}>
-              {errors.url}
-            </InputError>
-          </InputDiv>
-          <Button type="submit" onClick={submit}>
-            Create
-          </Button>
-        </Fieldset>
-      </form>
+      <Form onSubmit={handleSubmit} pending={pending} ref={formRef}>
+        {({ errors, validity, clearInput, submit }, { text }) => {
+          return (
+            <>
+              <Form.Group>
+                <Form.Label htmlFor="title">Title</Form.Label>
+                <Form.Control
+                  {...text("title", validators.required())}
+                  valid={validity.title}
+                  error={errors.title}
+                  onClear={clearInput("title")}
+                  placeholder="How to do thing"
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label htmlFor="author">Author</Form.Label>
+                <Form.Control
+                  {...text("author", validators.required())}
+                  valid={validity.author}
+                  error={errors.author}
+                  onClear={clearInput("author")}
+                  placeholder="Thing Maker"
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label htmlFor="url">URL</Form.Label>
+                <Form.Control
+                  {...text("url", validators.matchUrl)}
+                  valid={validity.url}
+                  error={errors.url}
+                  onClear={clearInput("url")}
+                  placeholder="http://dothething.com"
+                />
+              </Form.Group>
+              <Row cols={2}>
+                <Button
+                  type="submit"
+                  onClick={submit}
+                  pending={pending}
+                  appearance="add"
+                >
+                  Create
+                </Button>
+                <Button onClick={handleClickClear}>Clear</Button>
+              </Row>
+            </>
+          );
+        }}
+      </Form>
     </Wrapper>
   );
 };
@@ -100,7 +102,8 @@ const BlogFormView = ({ blogAdded, addBlog, pending, toggleableOpen }) => {
 BlogFormView.propTypes = {
   blogAdded: PropTypes.func.isRequired,
   addBlog: PropTypes.func.isRequired,
-  pending: PropTypes.bool.isRequired
+  pending: PropTypes.bool,
+  toggleableOpen: PropTypes.bool,
 };
 
 export default BlogFormView;

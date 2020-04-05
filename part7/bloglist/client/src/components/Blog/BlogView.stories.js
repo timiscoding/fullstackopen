@@ -3,13 +3,16 @@ import { action } from "@storybook/addon-actions";
 import { withKnobs, boolean } from "@storybook/addon-knobs";
 import Blog from "./BlogView";
 
+const Wrapper = storyFn => <div style={{ margin: 30 }}>{storyFn()}</div>;
+
 export default {
   title: "Blog",
-  decorators: [withKnobs]
+  decorators: [withKnobs, Wrapper]
 };
 
 const blog = [
   {
+    id: "blog1",
     title: "Top 5 things you should do",
     author: "Doris",
     url: "http://www.dostuff.com",
@@ -22,6 +25,7 @@ const blog = [
     commentCount: 3
   },
   {
+    id: "blog2",
     title:
       "How to blog like a real professional: Tales from the jolly swagman as told by Australian great Banjo Patterson",
     author: "Jenkins Klaus Alexander Samantha Randolph the first",
@@ -36,7 +40,7 @@ const blog = [
   }
 ];
 
-export const normal = () => {
+export const Normal = () => {
   return (
     <Blog
       blog={blog[0]}
@@ -46,13 +50,13 @@ export const normal = () => {
   );
 };
 
-export const overflow = () => (
+export const Overflow = () => (
   <div style={{ maxWidth: 380 }}>
     <Blog blog={blog[1]} onActions={{}} pending={{}} />
   </div>
 );
 
-export const loggedIn = () => {
+export const LoggedIn = () => {
   const pending = {
     blog: boolean("Pending blog"),
     delete: boolean("Deleting blog"),

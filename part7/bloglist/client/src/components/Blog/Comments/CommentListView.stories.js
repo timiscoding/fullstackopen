@@ -3,7 +3,7 @@ import CommentList from "./CommentListView";
 import { withKnobs, boolean } from "@storybook/addon-knobs";
 
 export default {
-  title: "CommentList",
+  title: "Blog/Comments",
   decorators: [withKnobs]
 };
 
@@ -14,7 +14,7 @@ const comments = [
   { body: "Naughty list", createdAt: new Date().toISOString() }
 ];
 
-export const normal = () => {
+export const CommentListStory = () => {
   const noComments = boolean("No comments");
   return (
     <CommentList
@@ -23,3 +23,5 @@ export const normal = () => {
     />
   );
 };
+
+CommentListStory.story = { name: "Comment List" };

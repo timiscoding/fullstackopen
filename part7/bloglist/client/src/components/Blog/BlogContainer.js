@@ -36,9 +36,16 @@ const BlogContainer = ({
   }, [blog, fetchBlog, match.params.id, isFetchingBlog]);
 
   const handleDelete = () => {
-    const ok = window.confirm(`Delete ${blog.title} by ${blog.author}?`);
-    if (!ok) return;
+    // const ok = window.confirm(`Delete ${blog.title} by ${blog.author}?`);
+    // if (!ok) return;
     deleteBlog(blog.id, blog.user.id, history);
+  };
+  const handleLike = blog => {
+    if (!currentUser) {
+      history.push("/login");
+      return;
+    }
+    likeBlog(blog);
   };
 
   if (error) return <Error error={error} />;
@@ -46,14 +53,14 @@ const BlogContainer = ({
   const isBlogCreator =
     isLoggedIn && currentUser.username === blog?.user?.username;
   return (
-    <div>
+    <>
       <Helmet>
         <title>{(blog?.title && capitalize(blog.title)) ?? "Blog"}</title>
       </Helmet>
       <Blog
         blog={blog}
         onActions={{
-          like: isLoggedIn && (() => likeBlog(blog)),
+          like: handleLike,
           delete: isBlogCreator && handleDelete
         }}
         pending={{
@@ -63,7 +70,7 @@ const BlogContainer = ({
         }}
       />
       <CommentContainer />
-    </div>
+    </>
   );
 };
 

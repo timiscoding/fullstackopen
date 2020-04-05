@@ -1,80 +1,7 @@
-import React, { useState } from "react";
-import styled, { css } from "styled-components";
+import React, { useState, useEffect } from "react";
 import onClickOutside from "react-onclickoutside";
 import PropTypes from "prop-types";
-import { ReactComponent as DownChevronIcon } from "../../icons/down-chevron.svg";
-import { ReactComponent as UpChevronIcon } from "../../icons/up-chevron.svg";
-
-const defaults = {
-  borderWidth: "2px",
-  borderStyle: "solid",
-  borderColor: css`
-    ${({ theme }) => theme.primary}
-  `,
-  padding: "5px",
-  width: "100px",
-  listBg: "#fff",
-  fontSize: ".8em"
-};
-
-const Wrapper = styled.div`
-  cursor: default;
-  user-select: none;
-  position: relative;
-  width: var(--dd-width, defaults.width);
-  font-size: var(--dd-font-size, ${defaults.fontSize});
-`;
-
-const borderWidth = `var(--dd-border-width, ${defaults.borderWidth})`;
-
-const borderStyles = css`
-  border-width: ${borderWidth};
-  border-style: var(--dd-border-style, ${defaults.borderStyle});
-  border-color: var(--dd-border-color, ${defaults.borderColor});
-`;
-
-const Title = styled.div`
-  ${borderStyles}
-  color: var(--dd-title-fg, ${({ theme }) => theme.fontLight});
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--dd-padding, ${defaults.padding});
-  background-color: var(--dd-title-bg, ${({ theme }) => theme.primaryLight});
-`;
-
-const List = styled.ul`
-  ${borderStyles}
-  background-color: var(--dd-list-bg, ${defaults.listBg});
-  min-width: calc(100% - 2 * ${borderWidth});
-  display: inline-block;
-  position: absolute;
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  top: calc(100% - ${borderWidth});
-  left: 0;
-  z-index: 1;
-`;
-
-const ListItem = styled.li`
-  padding: var(--dd-padding, ${defaults.padding});
-  background-color: ${({ highlighted, theme }) =>
-    highlighted
-      ? `
-    var(
-      --dd-item-highlight-bg,
-      ${theme.secondary}
-    );
-  `
-      : "transparent"};
-`;
-
-const StyledDownChevronIcon = styled(DownChevronIcon)`
-  width: var(--dd-font-size, ${defaults.fontSize});
-  height: var(--dd-font-size, ${defaults.fontSize});
-  fill: var(--dd-title-fg, ${({ theme }) => theme.fontLight});
-`;
+import { Wrapper, Title, List, ListItem, DownChevronIcon } from "./styled";
 
 const SPACE_KEY = 32;
 const ESCAPE_KEY = 27;
@@ -92,11 +19,15 @@ const DropdownView = ({
   onChange = () => {},
   defaultValue
 }) => {
+  useEffect(() => {
+    setSelected(options.findIndex(o => o.value === defaultValue));
+  }, [defaultValue, options]);
   const [listOpen, setListOpen] = useState(false);
   const [selected, setSelected] = useState(
     defaultValue && options.findIndex(o => o.value === defaultValue)
   );
   const [highlighted, setHighlighted] = useState();
+
   const handleClick = () => setListOpen(!listOpen);
   DropdownView.handleClickOutside = () => setListOpen(false);
   const selectItem = id => {
@@ -144,7 +75,6 @@ const DropdownView = ({
   };
 
   const handleMouseOver = id => setHighlighted(id);
-
   return (
     <Wrapper
       className={className}
@@ -152,9 +82,9 @@ const DropdownView = ({
       tabIndex="0"
       onKeyDown={handleKeyDown}
     >
-      <Title>
+      <Title listOpen={listOpen}>
         {options?.[selected]?.title ?? defaultTitle}
-        <StyledDownChevronIcon as={listOpen && UpChevronIcon} />
+        <DownChevronIcon collapse={listOpen} />
       </Title>
       {listOpen && (
         <List>

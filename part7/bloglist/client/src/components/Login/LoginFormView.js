@@ -1,88 +1,77 @@
 import React, { useRef } from "react";
 import PropTypes from "prop-types";
-import styled from "styled-components";
-import { useFormState, useInputErrorHeights } from "../../hooks";
-import { required } from "../../hooks/utils";
-import Input, { InputDiv, Label, InputError, Fieldset } from "../Input";
-import PrimaryButton from "../PrimaryButton";
-import { ReactComponent as LoginIcon } from "../../icons/login.svg";
-
-const LoginInput = styled(Input).attrs({
-  autoComplete: "off"
-})`
-  ${({ valid, theme }) => `
-    border-color: ${valid !== false ? theme.grey : theme.error}
-    background-color: ${valid !== false ? "#fff" : theme.errorLight}
-  `};
-`;
-
-const StyledLoginIcon = styled(LoginIcon)`
-  height: 1em;
-  width: 1em;
-  vertical-align: sub;
-  fill: white;
-  margin-right: 5px;
-`;
+import Form from "../Form";
+import * as validators from "../Form/validators";
+import Button from "../Button";
+import Row from "../Row";
+import Box from "../Box";
+import { RegisterLink } from "./styled";
+import LoginIcon from "../../icons/login.svg";
 
 const LoginFormView = ({ onLogin, pending }) => {
   const formRef = useRef();
-  const errorRefs = {
-    username: useRef(),
-    password: useRef()
-  };
-  const [
-    { validity, errors, values, submit },
-    { text, password }
-  ] = useFormState(formRef);
-  const errorHeights = useInputErrorHeights(errorRefs, errors);
 
-  const handleSubmit = event => {
-    event.preventDefault();
+  const handleSubmit = ({ username, password }) => {
     onLogin({
-      username: values.username,
-      password: values.password
+      username,
+      password
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} ref={formRef}>
-      <Fieldset disabled={pending}>
-        <InputDiv>
-          <Label htmlFor="username">Username</Label>
-          <LoginInput
-            id="username"
-            {...text("username", required())}
-            valid={validity.username}
-            autoFocus
-          />
-          <InputError ref={errorRefs.username} height={errorHeights.username}>
-            {errors.username}
-          </InputError>
-        </InputDiv>
-
-        <InputDiv>
-          <Label htmlFor="password">Password</Label>
-          <LoginInput
-            id="password"
-            {...password("password", required())}
-            valid={validity.password}
-          />
-          <InputError ref={errorRefs.password} height={errorHeights.password}>
-            {errors.password}
-          </InputError>
-        </InputDiv>
-        <PrimaryButton type="submit" onClick={submit}>
-          <StyledLoginIcon />
-          {pending ? "Logging in..." : "Login"}
-        </PrimaryButton>
-      </Fieldset>
-    </form>
+    <Box>
+      <Box.Header>Login</Box.Header>
+      <Box.Body>
+        <Form onSubmit={handleSubmit} ref={formRef} pending={pending}>
+          {({ validity, errors, submit }, { text, password }) => (
+            <>
+              <Form.Group>
+                <Form.Label htmlFor="username">Username</Form.Label>
+                <Form.Control
+                  {...text("username", validators.required())}
+                  valid={validity.username}
+                  error={errors.username}
+                  autoFocus
+                  autoComplete="off"
+                  noValidStyle
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label htmlFor="password">Password</Form.Label>
+                <Form.Control
+                  id="password"
+                  {...password("password", validators.required())}
+                  valid={validity.password}
+                  error={errors.password}
+                  autoComplete="off"
+                  noValidStyle
+                />
+              </Form.Group>
+              <Row cols={2}>
+                <Button
+                  type="submit"
+                  onClick={submit}
+                  icon={LoginIcon}
+                  pending={pending}
+                  appearance="primary"
+                >
+                  Login
+                </Button>
+                <RegisterLink to="/register">
+                  Don&apos;t have an account?
+                </RegisterLink>
+              </Row>
+            </>
+          )}
+        </Form>
+      </Box.Body>
+    </Box>
   );
 };
 
 LoginFormView.propTypes = {
   onLogin: PropTypes.func.isRequired,
-  pending: PropTypes.bool.isRequired
+  pending: PropTypes.bool
 };
 
 export default LoginFormView;

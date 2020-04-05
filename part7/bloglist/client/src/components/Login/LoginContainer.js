@@ -17,7 +17,6 @@ const LoginContainer = ({ currentUser, login, pending }) => {
       <Helmet>
         <title>Login</title>
       </Helmet>
-      <h2>Login</h2>
       <LoginForm onLogin={login} pending={pending} />
     </>
   );

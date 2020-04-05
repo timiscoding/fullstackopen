@@ -150,7 +150,7 @@ export const getError = (state, actionTypes) => {
 export const getPageIds = (state, actionType) => {
   const pageData = state.paging[getActionName(actionType)];
   if (!pageData || !pageData.pages) {
-    return [];
+    return null;
   }
   return pageData.pages[pageData.currentPage];
 };

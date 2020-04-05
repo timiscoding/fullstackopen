@@ -28,7 +28,6 @@ export default ({ getState, dispatch }) => next => async action => {
     const response = await Axios({
       method,
       headers,
-      baseURL: process.env.REACT_APP_BASE_URL,
       url,
       data: payload
     });

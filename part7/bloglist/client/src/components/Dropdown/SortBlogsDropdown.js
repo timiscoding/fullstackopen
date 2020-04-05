@@ -1,37 +1,37 @@
 import React from "react";
-import styled from "styled-components";
+import styled from "styled-components/macro";
 import Dropdown from "./";
 
 const sortOptions = [
   {
     value: "createdAt-desc",
-    title: "Sort by: Newest first"
+    title: "By newest first"
   },
   {
     value: "createdAt-asc",
-    title: "Sort by: Oldest first"
+    title: "By oldest first"
   },
   {
     value: "title-asc",
-    title: "Sort by: Title A-Z"
+    title: "By title A-Z"
   },
   {
     value: "title-desc",
-    title: "Sort by: Title Z-A"
+    title: "By title Z-A"
   },
   {
     value: "likes-desc",
-    title: "Sort by: Most popular first"
+    title: "By most popular first"
   },
   {
     value: "likes-asc",
-    title: "Sort by: Least popular first"
+    title: "By least popular first"
   }
 ];
 
 const SortDropdown = styled(Dropdown)`
-  --dd-width: 200px;
   float: right;
+  --dd-width: 180px;
 `;
 
 const DEFAULT_VALUE = sortOptions[0].value;

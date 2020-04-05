@@ -1,7 +1,7 @@
 import React from "react";
 import { action } from "@storybook/addon-actions";
 import { withKnobs, color, number } from "@storybook/addon-knobs";
-import styled from "styled-components";
+import styled from "styled-components/macro";
 import Dropdown from "./";
 
 const MyDropdown = styled(Dropdown)`
@@ -28,7 +28,10 @@ const MyDropdown = styled(Dropdown)`
 
 export default {
   title: "Dropdown",
-  decorators: [withKnobs]
+  decorators: [
+    withKnobs,
+    storyFn => <div style={{ margin: 20 }}>{storyFn()}</div>
+  ]
 };
 
 const options = [
@@ -40,7 +43,7 @@ const options = [
 
 export const normal = () => (
   <Dropdown
-    defaultTitle="Choose character"
+    defaultTitle="Choose"
     options={options}
     onChange={action("Chose")}
   />

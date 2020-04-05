@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import styled from "styled-components";
+import styled from "styled-components/macro";
 import { clearFix } from "polished";
 import { Helmet } from "react-helmet";
 import { fetchUsers } from "../../actions";
@@ -70,7 +70,7 @@ const UsersContainer = ({
     history.push(`?${params}`);
   };
   if (error) return <Error error={error} />;
-  const pending = isFetchingUsers || !page?.currentPage;
+  const pending = isFetchingUsers || !page?.items;
   return (
     <>
       <Helmet>

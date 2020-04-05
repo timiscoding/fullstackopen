@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styled from "styled-components";
+import styled from "styled-components/macro";
 import BlogItem from "./BlogItem";
 import * as propTypes from "../../constants/propTypes";
 
@@ -31,10 +31,10 @@ const BlogListView = ({
   }
   return (
     <List>
-      {blogs.map((blog, key) => {
+      {blogs.map((blog, i) => {
         return (
           <BlogItem
-            key={blog?.id ?? key}
+            key={blog?.id || i}
             blog={blog}
             onLike={() => onLike(blog)}
             selectable={selectable}
@@ -50,7 +50,11 @@ const BlogListView = ({
 
 BlogListView.propTypes = {
   blogs: PropTypes.arrayOf(propTypes.blog),
-  onLike: PropTypes.func
+  onLike: PropTypes.func,
+  onSelect: PropTypes.func,
+  selected: PropTypes.object,
+  pending: PropTypes.bool,
+  selectable: PropTypes.bool
 };
 
 export default BlogListView;

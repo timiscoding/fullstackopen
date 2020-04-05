@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { Helmet } from "react-helmet";
 import capitalize from "lodash/capitalize";
 import { getUser } from "../../reducers";
-import { fetchUser, deleteBlogs, fetchBlogs } from "../../actions";
+import { fetchUser, deleteBlogs, fetchBlogs, likeBlog } from "../../actions";
 import * as actionTypes from "../../constants/actionTypes";
 import { getError, getCurrentUser, getPage } from "../../reducers";
 import Error from "../Error";
@@ -23,7 +23,8 @@ const UserContainer = ({
   page,
   location,
   isFetchingUser,
-  isFetchingBlogs
+  isFetchingBlogs,
+  likeBlog
 }) => {
   const [pageNum, setPageNum] = useState();
   useEffect(() => {
@@ -31,19 +32,15 @@ const UserContainer = ({
     const page = params.get("page") || 1;
     const sort = params.get("sort") || SortBlogsDropdown.DEFAULT_VALUE;
     const userId = match.params.id;
-    fetchUser(userId);
-    fetchBlogs({ userId, page, sort });
-    setPageNum(page);
-  }, [fetchUser, match.params.id, fetchBlogs, location]);
-  const handleDeleteBlogs = ids => {
-    const ok = window.confirm(
-      `Are you sure you want to delete ${ids.length} blog${
-        ids.length !== 1 ? "s" : ""
-      }?`
-    );
-    if (!ok) return;
-    deleteBlogs(ids, user.id, history);
-  };
+    if (!user) {
+      fetchUser(userId);
+    }
+    if (!page?.items) {
+      fetchBlogs({ userId, page, sort });
+      setPageNum(page);
+    }
+  }, [fetchUser, match.params.id, fetchBlogs, location, user]);
+  const handleDeleteBlogs = ids => deleteBlogs(ids, user.id, history);
   const handleChange = (type, value) => {
     const params = new URLSearchParams(location.search);
     if (type === "page") {
@@ -72,6 +69,7 @@ const UserContainer = ({
       <User
         user={user}
         onDeleteBlogs={handleDeleteBlogs}
+        onLikeBlog={likeBlog}
         showActions={isCurrentUser}
         blogPage={{ ...page, onPageChange: val => handleChange("page", val) }}
         onSortBlogsChange={val => handleChange("sort", val)}
@@ -97,6 +95,9 @@ const mapStateToProps = (state, { match }) => ({
   isFetchingUser: getPending(state, actionTypes.FETCH_USER_REQUEST)
 });
 
-export default connect(mapStateToProps, { fetchUser, deleteBlogs, fetchBlogs })(
-  UserContainer
-);
+export default connect(mapStateToProps, {
+  fetchUser,
+  deleteBlogs,
+  fetchBlogs,
+  likeBlog
+})(UserContainer);

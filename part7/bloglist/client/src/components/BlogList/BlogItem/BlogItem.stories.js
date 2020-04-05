@@ -3,30 +3,28 @@ import { action } from "@storybook/addon-actions";
 import { withKnobs, boolean } from "@storybook/addon-knobs";
 import BlogItem from ".";
 
-const Wrapper = storyFn => {
-  const [selected, setSelected] = useState(false);
-  const onSelect = val => {
-    action(`selected val: ${val}`)();
-    setSelected(!selected);
-  };
-  return <div>{storyFn({ selected, onSelect })}</div>;
-};
-
 export default {
-  title: "BlogItem",
-  decorators: [withKnobs, Wrapper]
+  title: "Blog List",
+  decorators: [withKnobs]
 };
 
 const blog = {
-  id: 1,
+  id: "blog1",
   title: "Watermelon",
   author: "Oscar",
+  url: "http://www.fruit.com",
   likes: 2,
   commentCount: 12,
   createdAt: new Date().toISOString()
 };
 
-export const normal = ({ selected, onSelect }) => {
+export const BlogItemStory = () => {
+  const [selected, setSelected] = useState(false);
+  const onSelect = val => {
+    action(`selected val: ${val}`)();
+    setSelected(!selected);
+  };
+  const onLike = () => action("Liked blog")();
   return (
     <BlogItem
       blog={blog}
@@ -34,6 +32,9 @@ export const normal = ({ selected, onSelect }) => {
       onSelect={onSelect}
       selected={selected}
       pending={boolean("Pending")}
+      onLike={onLike}
     />
   );
 };
+
+BlogItemStory.story = { name: "Blog Item" };

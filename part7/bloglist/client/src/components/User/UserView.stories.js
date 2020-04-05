@@ -14,7 +14,7 @@ const user = {
       url: "www.news.com.au",
       likes: 1000,
       commentCount: 38021,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     },
     {
       id: "2",
@@ -24,21 +24,24 @@ const user = {
       url: "www.news.com.au",
       likes: 32,
       commentCount: 32,
-      createdAt: new Date().toISOString()
-    }
-  ]
+      createdAt: new Date().toISOString(),
+    },
+  ],
 };
 
 export default {
   title: "User",
-  decorators: [withKnobs]
+  decorators: [withKnobs],
 };
 
 export const normal = () => (
   <UserView
     user={user}
     blogPage={{ currentPage: 1, lastPage: 2, items: user.blogs }}
-    showActions={boolean("User = Logged in user")}
-    pending={{ user: boolean("Pending user"), blogs: boolean("Pending blogs") }}
+    showActions={boolean("Logged in user", false)}
+    pending={{
+      user: boolean("Pending user", false),
+      blogs: boolean("Pending blogs", false),
+    }}
   />
 );

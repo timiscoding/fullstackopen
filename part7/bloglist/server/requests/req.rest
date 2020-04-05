@@ -62,7 +62,7 @@ authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkMzY3ZjJiM
 }
 
 ### fetch comments
-@blogForComments=5e097b2536d80f30a6f87a12
+@blogForComments=5e42288c404fa10a6b9c6fa9
 @commentOffset=0
 @commentLimit=6
 @commentSort=createdAt-desc

@@ -76,7 +76,7 @@ export const getPage = createSelector(
   [getPageIds, getCurrentPage, getLastPage, getItems],
   (itemsIds, currentPage, lastPage, items) => {
     return {
-      items: itemsIds.map(id => items[id]),
+      items: itemsIds?.map(id => items[id]),
       currentPage,
       lastPage
     };

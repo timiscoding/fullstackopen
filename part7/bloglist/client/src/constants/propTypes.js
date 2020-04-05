@@ -11,5 +11,7 @@ export const blog = PropTypes.shape({
   title: PropTypes.string.isRequired,
   author: PropTypes.string.isRequired,
   url: PropTypes.string.isRequired,
-  likes: PropTypes.number.isRequired
+  likes: PropTypes.number.isRequired,
+  commentCount: PropTypes.number,
+  createdAt: PropTypes.string
 });

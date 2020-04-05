@@ -1,32 +1,51 @@
 import * as actionTypes from "../constants/actionTypes";
 
+const isString = val => typeof val === "string";
+
 export default (draft, action) => {
+  const updateValidity = ({ name, validateRes }) => {
+    if (isString(validateRes)) {
+      draft.validity[name] = false;
+      draft.errors[name] = validateRes;
+    } else if (validateRes === true) {
+      draft.validity[name] = true;
+      delete draft.errors[name];
+    } else {
+      delete draft.errors[name];
+      delete draft.validity[name];
+    }
+  };
+
   switch (action.type) {
-    case actionTypes.CHANGE_INPUT: {
+    case actionTypes.INIT_VALUE: {
       draft.values[action.name] = action.value;
-      draft.validity[action.name] = !action.error;
-      if (action.error) {
-        draft.errors[action.name] = action.error;
-      } else {
-        delete draft.errors[action.name];
-      }
       return;
     }
-    case actionTypes.SET_ERRORS: {
-      draft.errors = action.errors;
-      Object.entries(action.errors).forEach(([name, error]) => {
-        draft.validity[name] = !error;
+    case actionTypes.INIT_VALUES: {
+      draft.values = action.values;
+      return;
+    }
+    case actionTypes.CHANGE_INPUT: {
+      const { name, value, validateRes } = action;
+      draft.values[name] = value;
+      updateValidity({
+        name,
+        validateRes
       });
       return;
     }
+    case actionTypes.SET_ERRORS: {
+      action.validateResults.forEach(updateValidity);
+      return;
+    }
     case actionTypes.CLEAR_INPUT: {
-      draft.values[action.name] = "";
+      draft.values[action.name] = action.value;
       delete draft.validity[action.name];
       delete draft.errors[action.name];
       return;
     }
     case actionTypes.CLEAR_ALL: {
-      draft.values = {};
+      draft.values = { ...action.values };
       draft.validity = {};
       draft.errors = {};
       return;

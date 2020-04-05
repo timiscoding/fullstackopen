@@ -1,29 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styled, { css } from "styled-components";
 import Skeleton from "react-loading-skeleton";
 import * as propTypes from "../../../constants/propTypes";
 import { formatTimestamp } from "../../utils";
-
-const border = css`
-  1px solid ${({ theme }) => theme.greyLight}
-`;
-
-const StyledCommentList = styled.ul`
-  list-style-type: none;
-  padding: 0;
-  border-top: ${border};
-`;
-
-const Time = styled.time`
-  font-size: 0.75em;
-  color: ${({ theme }) => theme.greyDarker};
-`;
-
-const Comment = styled.li`
-  padding: 5px 0;
-  border-bottom: ${border};
-`;
+import { Comment, Body, Time, CommentList } from "./styled/CommentsListView";
 
 const CommentListView = ({ comments, pending }) => {
   if (pending) {
@@ -36,10 +16,10 @@ const CommentListView = ({ comments, pending }) => {
   }
   return (
     <div>
-      <StyledCommentList>
+      <CommentList>
         {comments.map(({ body, createdAt }, i) => (
           <Comment key={i}>
-            <div>{body || <Skeleton width="70%" />}</div>
+            <Body>{body || <Skeleton width="70%" />}</Body>
             <Time dateTime={createdAt}>
               {createdAt ? (
                 formatTimestamp(createdAt)
@@ -49,14 +29,14 @@ const CommentListView = ({ comments, pending }) => {
             </Time>
           </Comment>
         ))}
-      </StyledCommentList>
+      </CommentList>
     </div>
   );
 };
 
 CommentListView.propTypes = {
   comments: propTypes.comments,
-  pending: PropTypes.bool.isRequired
+  pending: PropTypes.bool
 };
 
 export default CommentListView;

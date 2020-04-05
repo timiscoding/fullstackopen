@@ -1,171 +1,21 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import styled from "styled-components";
 import Skeleton from "react-loading-skeleton";
-import { CSSTransition } from "react-transition-group";
-import { clearFix } from "polished";
 import BlogList from "../BlogList";
-import Checkbox from "../Checkbox";
-import Button from "../Button";
 import Pager from "../Pager";
+import Modal from "../Modal";
+import Button from "../Button";
 import { SortBlogsDropdown } from "../Dropdown";
+import ActionPanel from "./ActionPanel";
+import Row from "../Row";
 import * as propTypes from "../../constants/propTypes";
-
-const StyledActionPanel = styled.div`
-  display: ${({ pending }) => (pending ? "block" : "flex")};
-  overflow: hidden;
-  justify-content: space-between;
-  align-items: center;
-  height: 2em;
-  ${({ theme, pending }) => `
-    border-bottom: 2px solid ${pending ? theme.greyLight : theme.primary};
-  `};
-  padding: 5px;
-`;
-
-const DeletePanel = styled.div`
-  transition: transform 0.25s ease-out, opacity 0.25s ease-out;
-  & > * {
-    margin-left: 10px;
-  }
-
-  &.panel-enter {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-
-  &.panel-enter-active {
-    transform: translateX(0%);
-    opacity: 1;
-  }
-
-  &.panel-exit {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-`;
-
-const SelectAll = styled.span`
-  margin-right: 10px;
-  & label {
-    cursor: pointer;
-    margin-right: 5px;
-    user-select: none;
-  }
-`;
-
-const DeleteButton = styled(Button)`
-  --btn-border-color: ${({ theme }) => theme.error};
-  --btn-bg-color: ${({ theme }) => theme.redLighter};
-  --btn-bg-color-hover: ${({ theme }) => theme.red};
-  --btn-fg-color-hover: ${({ theme }) => theme.fontLight};
-  --btn-bg-color-active: ${({ theme }) => theme.error};
-  --btn-fg-color-active: ${({ theme }) => theme.fontLight};
-`;
-
-const Link = styled.button`
-  cursor: pointer;
-`;
-
-const SortWrapper = styled.div`
-  ${clearFix()}
-`;
-
-const UserInfoList = styled.ul`
-  list-style-type: none;
-  padding: 0;
-  margin-top: -10px;
-`;
-
-const UserInfoItem = styled.li`
-  display: inline;
-  font-size: 0.9em;
-  font-weight: 600;
-  color: ${({ theme }) => theme.primary};
-  &:not(:first-child) {
-    margin-left: 10px;
-  }
-  &:not(:first-child):before {
-    content: "❘";
-    padding-right: 10px;
-  }
-`;
-
-const UserInfoName = styled(UserInfoItem)`
-  text-transform: capitalize;
-`;
-
-const UserInfoTitle = styled.h2`
-  text-transform: capitalize;
-`;
-
-const ActionPanel = ({
-  onClickMode,
-  deleteMode,
-  onClickCheckAll,
-  checkAll,
-  onClickDelete,
-  disableDelete,
-  pending
-}) => {
-  if (pending) {
-    return (
-      <StyledActionPanel pending={pending}>
-        <div style={{ lineHeight: "2em" }}>
-          <Skeleton width="20%" />
-        </div>
-      </StyledActionPanel>
-    );
-  }
-  return (
-    <StyledActionPanel>
-      <div>
-        <ToggleLink isLink={deleteMode} onClick={onClickMode}>
-          View mode
-        </ToggleLink>{" "}
-        |{" "}
-        <ToggleLink
-          isLink={!deleteMode}
-          onClick={onClickMode}
-          pending={pending}
-        >
-          Delete mode
-        </ToggleLink>
-      </div>
-      <CSSTransition
-        in={deleteMode}
-        classNames="panel"
-        timeout={250}
-        mountOnEnter
-        unmountOnExit
-      >
-        <DeletePanel>
-          <DeleteButton onClick={onClickDelete} disabled={disableDelete}>
-            Delete
-          </DeleteButton>
-          <SelectAll>
-            <label htmlFor="checkAll">Select all</label>
-            <Checkbox
-              id="checkAll"
-              onChange={onClickCheckAll}
-              checked={checkAll}
-            />
-          </SelectAll>
-        </DeletePanel>
-      </CSSTransition>
-    </StyledActionPanel>
-  );
-};
-
-const ToggleLink = ({ children, isLink, onClick }) => {
-  return isLink ? (
-    <Link as="a" onClick={onClick}>
-      {children}
-    </Link>
-  ) : (
-    <span>{children}</span>
-  );
-};
+import { useMatchMobile, useModal } from "../../hooks";
+import {
+  UserInfoTitle,
+  UserInfoList,
+  UserInfoItem,
+  SortWrapper
+} from "./styled";
 
 const UserHeader = ({ user, pending }) => {
   return (
@@ -175,8 +25,14 @@ const UserHeader = ({ user, pending }) => {
       </UserInfoTitle>
       {!pending ? (
         <UserInfoList>
-          <UserInfoName>{user.name}</UserInfoName>
-          <UserInfoItem>{`${user?.blogs?.length} blogs`}</UserInfoItem>
+          <UserInfoItem>{user.name}</UserInfoItem>
+          <UserInfoItem>
+            {user?.blogs?.length !== undefined ? (
+              `${user.blogs.length} blogs`
+            ) : (
+              <Skeleton width="10%" />
+            )}
+          </UserInfoItem>
         </UserInfoList>
       ) : (
         <UserInfoList>
@@ -194,19 +50,23 @@ const UserView = ({
   pending,
   blogPage,
   onSortBlogsChange,
-  sortBlogs
+  sortBlogs,
+  onLikeBlog
 }) => {
   const [selected, setSelected] = useState(new Set());
-  const [deleteMode, setDeleteMode] = useState(false);
   const [checkAll, setCheckAll] = useState(false);
+  const isMobile = useMatchMobile();
+  const [deleteMode, setDeleteMode] = useState(false);
+  const modals = useModal();
 
-  const handleClickMode = e => {
-    e.preventDefault();
+  const handleToggleMode = () => {
     setDeleteMode(!deleteMode);
   };
   const handleDelete = () => {
     if (selected.size === 0) return;
     onDeleteBlogs(Array.from(selected));
+    setSelected(new Set());
+    modals.deleteBlogs.onClose();
   };
   const handleClickCheckAll = () => {
     const next = !checkAll;
@@ -230,9 +90,8 @@ const UserView = ({
       blogPage.onPageChange(value);
     }
   };
-
   return (
-    <div>
+    <>
       <UserHeader user={user} pending={pending.user} />
       <SortWrapper>
         <SortBlogsDropdown
@@ -240,23 +99,28 @@ const UserView = ({
           defaultValue={sortBlogs}
         />
       </SortWrapper>
-      {showActions && (
+      {showActions && blogPage?.items?.length > 0 && (
         <ActionPanel
-          onClickMode={handleClickMode}
-          deleteMode={deleteMode}
+          onToggleMode={handleToggleMode}
+          deleteMode={isMobile === false ? true : deleteMode}
           onClickCheckAll={handleClickCheckAll}
           checkAll={checkAll}
-          onClickDelete={handleDelete}
+          onClickDelete={modals.deleteBlogs.onOpen}
           disableDelete={selected.size === 0}
           pending={pending.blogs}
+          deleteCount={selected.size}
+          isMobile={isMobile}
         />
       )}
       <BlogList
         blogs={blogPage?.items}
         pending={pending.blogs}
-        selectable={deleteMode}
+        selectable={
+          !showActions ? false : isMobile === false ? true : deleteMode
+        }
         onSelect={handleSelect}
         selected={selected}
+        onLike={onLikeBlog}
       />
       <Pager
         onClick={v => handleChange("page", v)}
@@ -264,7 +128,27 @@ const UserView = ({
         lastPage={blogPage?.lastPage}
         pending={pending.blogs}
       />
-    </div>
+      <Modal
+        show={modals.deleteBlogs.show}
+        onClose={modals.deleteBlogs.onClose}
+      >
+        <Modal.Header>Confirm deletion</Modal.Header>
+        <Modal.Body>
+          <p>
+            Are you sure you want to delete {selected.size} blog
+            {selected.size === 1 ? "" : "s"}?
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Row cols={2} justify="end">
+            <Button onClick={handleDelete} appearance="danger">
+              Delete
+            </Button>
+            <Button onClick={modals.deleteBlogs.onClose}>Cancel</Button>
+          </Row>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 
@@ -273,9 +157,12 @@ UserView.propTypes = {
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     username: PropTypes.string.isRequired,
-    blogs: PropTypes.arrayOf(PropTypes.string)
+    blogs: PropTypes.arrayOf(propTypes.blog)
   }),
   onDeleteBlogs: PropTypes.func,
+  onSortBlogsChange: PropTypes.func,
+  onLikeBlog: PropTypes.func,
+  sortBlogs: PropTypes.string,
   showActions: PropTypes.bool,
   pending: PropTypes.objectOf(PropTypes.bool),
   blogPage: PropTypes.shape({

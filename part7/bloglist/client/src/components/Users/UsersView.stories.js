@@ -8,31 +8,31 @@ const users = [
     id: "1",
     username: "zerocool",
     name: "abel",
-    blogCount: 3
+    blogCount: 3,
   },
   {
     id: "2",
     username: "morpheus",
     name: "jobe",
-    blogCount: 12
+    blogCount: 12,
   },
   {
     id: "3",
     username: "powerpuff",
     name: "nancy",
-    blogCount: 8
-  }
+    blogCount: 8,
+  },
 ];
 
 export default {
   title: "Users",
-  decorators: [withKnobs]
+  decorators: [withKnobs],
 };
 
 export const normal = () => (
   <UsersView
-    users={boolean("No users") ? [] : users}
+    users={boolean("No users", false) ? [] : users}
     onUserClick={action("clicked user")}
-    pending={boolean("Pending")}
+    pending={boolean("Pending", false)}
   />
 );
