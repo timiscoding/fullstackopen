@@ -1,0 +1,22 @@
+{
+  "name": "exercises",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "calculateBmi": "ts-node bmiCalculator.ts",
+    "calculateExercises": "ts-node exerciseCalculator.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Timothy Tsui <timiscoding@gmail.com> (https://github.com/timiscoding)",
+  "license": "MIT",
+  "dependencies": {
+    "express": "4.17.1",
+    "ts-node": "8.8.2",
+    "typescript": "3.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "13.11.1"
+  }
+}
