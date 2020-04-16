@@ -19,12 +19,15 @@ const ratings = [
   "Amazing job, you exceeded your target!",
 ];
 
-const calculateExercises = (
+export const calculateExercises = (
   exerciseHrs: number[],
   dailyTarget: number
 ): Result => {
-  const average = exerciseHrs.reduce((sum, h) => sum + h) / exerciseHrs.length;
-  const success = average > dailyTarget;
+  const average: number =
+    exerciseHrs.length > 0
+      ? exerciseHrs.reduce((sum, h) => sum + h, 0) / exerciseHrs.length
+      : 0;
+  const success = average >= dailyTarget;
   const rating = average < dailyTarget ? 1 : average === dailyTarget ? 2 : 3;
   return {
     periodLength: exerciseHrs.length,
@@ -37,7 +40,7 @@ const calculateExercises = (
   };
 };
 
-const parseArguments = (args: Array<string>): ExerciseValues => {
+export const parseArguments = (args: Array<string>): ExerciseValues => {
   if (args.length < 4) {
     throw Error("Not enough args");
   }
@@ -54,10 +57,3 @@ const parseArguments = (args: Array<string>): ExerciseValues => {
     throw Error("Args must be numbers");
   }
 };
-
-try {
-  const { hrs, target } = parseArguments(process.argv);
-  console.log(calculateExercises(hrs, target));
-} catch (e) {
-  console.error(`Error: ${e.message}`);
-}

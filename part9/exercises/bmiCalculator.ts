@@ -1,46 +1,46 @@
 interface BmiValues {
   height: number;
-  mass: number;
+  weight: number;
 }
 
-const calculateBmi = (height: number, mass: number): string => {
+export const calculateBmi = (height: number, weight: number): string => {
   const heightMeters = height / 100;
-  const bmi = mass / (heightMeters * heightMeters);
-  const bmiCat = new Map([
-    [[0, 15], "Very severely underweight"],
-    [[15, 16], "Severely underweight"],
-    [[16, 18.5], "Underweight"],
-    [[18.5, 25], "Normal (healthy weight)"],
-    [[25, 30], "Overweight"],
-    [[30, 35], "Obese Class I (Moderately obese)"],
-    [[35, 40], "Obese Class II (Severely obese)"],
-    [[40, Infinity], "Obese Class III (Very severely obese)"],
-  ]);
-  for (let [[min, max], cat] of bmiCat) {
-    if (bmi >= min && bmi < max) {
-      return cat;
-    }
-  }
+  const bmi = weight / (heightMeters * heightMeters);
+  const bmiRanges = [
+    [0, 15],
+    [15, 16],
+    [16, 18.5],
+    [18.5, 25],
+    [25, 30],
+    [30, 35],
+    [35, 40],
+    [40, Infinity],
+  ];
+  const cats = [
+    "Very severely underweight",
+    "Severely underweight",
+    "Underweight",
+    "Normal (healthy weight)",
+    "Overweight",
+    "Obese Class I (Moderately obese)",
+    "Obese Class II (Severely obese)",
+    "Obese Class III (Very severely obese)",
+  ];
+  const index = bmiRanges.findIndex(([min, max]) => bmi >= min && bmi < max);
+  return cats[index];
 };
 
-const parseArgs = (args: Array<string>): BmiValues => {
+export const parseArgs = (args: Array<string>): BmiValues => {
   if (args.length !== 4) {
-    throw Error("Must provide 2 arguments: height (cm) and mass (kg)");
+    throw Error("Must provide 2 arguments: height (cm) and weight (kg)");
   }
   const height = Number(args[2]);
-  const mass = Number(args[3]);
-  if (Number.isNaN(height) || Number.isNaN(mass)) {
-    throw Error("Height and mass must be a number");
+  const weight = Number(args[3]);
+  if (Number.isNaN(height) || Number.isNaN(weight)) {
+    throw Error("Height and weight must be a number");
   }
   return {
     height,
-    mass,
+    weight,
   };
 };
-
-try {
-  const { height, mass } = parseArgs(process.argv);
-  console.log(calculateBmi(height, mass));
-} catch (e) {
-  console.error(`Error: ${e.message}`);
-}

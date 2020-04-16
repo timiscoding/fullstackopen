@@ -1,0 +1,11 @@
+@base=http://localhost:3003
+
+POST {{base}}/exercises HTTP/1.1
+Content-Type: application/json
+
+{
+  "target": 2,
+  "daily_exercises": [2, 3]
+}
+
+GET {{base}}/hello HTTP/1.1
