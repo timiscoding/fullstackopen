@@ -2,7 +2,7 @@
   // https://github.com/microsoft/vscode-eslint/issues/696#issuecomment-542592372
   "eslint.workingDirectories": [
     {
-      "pattern": "./part9/*"
+      "mode": "auto" //"pattern": "/flight-diaries|patientor/*"
     }
   ]
 }
