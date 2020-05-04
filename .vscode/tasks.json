@@ -1,0 +1,65 @@
+ {
+	"version": "2.0.0",
+	"tasks": [
+    {
+      "label": "pnpm: install from current dir",
+      "type": "shell",
+      "command": "cd ${fileDirname} && pnpm install",
+      "detail": "install dependencies from package",
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: start - patientor/client",
+      "type": "npm",
+      "script": "start",
+      "path": "part9/patientor/client/",
+      "problemMatcher": [],
+      "detail": "react-scripts start",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false,
+        "group": "patientor"
+      }
+    },
+    {
+      "label": "npm: dev - patientor/server",
+      "type": "npm",
+      "script": "dev",
+      "path": "part9/patientor/server/",
+      // "dependsOn": ["tsc: build - patientor/server"],
+      "problemMatcher": [],
+      "detail": "npm run dev patientor/server",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "group": "patientor",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "path": "part9/my-courses/",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build - part9/my-courses",
+      "detail": "react-scripts build"
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "part9/patientor/server/tsconfig.json",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": "build",
+      "label": "tsc: build - patientor/server"
+    },
+  ]
+}
