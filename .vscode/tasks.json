@@ -2,6 +2,13 @@
 	"version": "2.0.0",
 	"tasks": [
     {
+      "label": "redis",
+      "type": "shell",
+      "command": "redis-server",
+      "detail": "Launch redis server",
+      "problemMatcher": []
+    },
+    {
       "label": "pnpm: install from current dir",
       "type": "shell",
       "command": "cd ${fileDirname} && pnpm install",
