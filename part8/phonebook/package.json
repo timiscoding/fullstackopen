@@ -1,0 +1,19 @@
+{
+  "name": "phonebook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Timothy Tsui <timiscoding@gmail.com> (https://github.com/timiscoding)",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-server": "2.15.0",
+    "graphql": "15.2.0",
+    "uuid": "8.2.0"
+  },
+  "prettier": {}
+}
