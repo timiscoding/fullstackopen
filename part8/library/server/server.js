@@ -145,7 +145,7 @@ const resolvers = {
   },
   Mutation: {
     addBook: (root, args) => {
-      const author = authors.find((a) => a.name === args.name);
+      const author = authors.find((a) => a.name === args.author);
       if (!author) {
         const newAuthor = { id: uuid(), name: args.author };
         if (args.born) {
