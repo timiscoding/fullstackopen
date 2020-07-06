@@ -13,6 +13,9 @@
   "dependencies": {
     "apollo-server": "2.15.0",
     "graphql": "15.2.0",
+    "jsonwebtoken": "8.5.1",
+    "mongoose": "5.9.21",
+    "mongoose-unique-validator": "2.0.3",
     "uuid": "8.2.0"
   },
   "prettier": {},
