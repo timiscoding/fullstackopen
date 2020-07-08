@@ -10,6 +10,6 @@
   "author": "Timothy Tsui <timiscoding@gmail.com> (https://github.com/timiscoding)",
   "license": "MIT",
   "dependencies": {
-    "mongoose": "5.6.4"
+    "mongoose": "5.7.5"
   }
 }
