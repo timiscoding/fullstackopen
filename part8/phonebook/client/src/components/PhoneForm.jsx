@@ -6,7 +6,9 @@ import { EDIT_NUMBER } from "../queries";
 export const PhoneForm = ({ setError }) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [editNumber, result] = useMutation(EDIT_NUMBER);
+  const [editNumber, result] = useMutation(EDIT_NUMBER, {
+    onError: (err) => setError(err.graphQLErrors[0].message),
+  });
 
   const submit = (e) => {
     e.preventDefault();

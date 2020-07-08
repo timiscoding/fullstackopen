@@ -10,21 +10,23 @@ wasn't an id associated with the objects
 see https://www.apollographql.com/blog/the-concepts-of-graphql-bc68bd819be3
 */
 export const ALL_AUTHORS = gql`
-  query {
+  query allAuthors {
     allAuthors {
       id
       name
       born
-      bookCount
     }
   }
 `;
 
 export const ALL_BOOKS = gql`
-  query {
+  query allBooks {
     allBooks {
       title
-      author
+      author {
+        name
+        born
+      }
       published
     }
   }
@@ -44,7 +46,10 @@ export const ADD_BOOK = gql`
       genres: $genres
     ) {
       title
-      author
+      author {
+        name
+        born
+      }
       published
       genres
     }
@@ -57,6 +62,14 @@ export const EDIT_AUTHOR = gql`
       id
       name
       born
+    }
+  }
+`;
+
+export const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      value
     }
   }
 `;

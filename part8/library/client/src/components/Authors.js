@@ -4,17 +4,18 @@ import { useQuery } from "@apollo/client";
 import { Loading, AuthorForm } from "./";
 import { ALL_AUTHORS } from "../queries";
 
-export const Authors = (props) => {
+export const Authors = ({ show, canEdit }) => {
   const { loading, data } = useQuery(ALL_AUTHORS);
 
-  if (!props.show) {
+  if (!show) {
     return null;
   }
-  const authors = data?.allAuthors || [];
 
   if (loading) {
     return <Loading pageName="Authors" />;
   }
+
+  const authors = data?.allAuthors || [];
 
   return (
     <div>
@@ -35,7 +36,7 @@ export const Authors = (props) => {
           ))}
         </tbody>
       </table>
-      <AuthorForm />
+      {canEdit ? <AuthorForm /> : null}
     </div>
   );
 };

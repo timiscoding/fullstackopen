@@ -1,0 +1,65 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+    {
+      "type": "npm",
+      "script": "start",
+      "path": "phonebook/server/",
+      "problemMatcher": [],
+      "label": "phonebook/server start",
+      "detail": "nodemon server.js",
+      "presentation": {
+        "group": "run"
+      }
+    },
+    {
+      "type": "npm",
+      "script": "start",
+      "path": "phonebook/client/",
+      "problemMatcher": [],
+      "label": "phonebook/client start",
+      "detail": "react-scripts start",
+      "presentation": {
+        "group": "run"
+      }
+    },
+    {
+      "label": "start phonebook",
+      "dependsOn": [
+        "phonebook/server start",
+        "phonebook/client start"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "start",
+      "path": "library/server/",
+      "problemMatcher": [],
+      "label": "library/server start",
+      "detail": "nodemon server.js",
+      "presentation": {
+        "group": "library start"
+      }
+    },
+    {
+      "type": "npm",
+      "script": "start",
+      "path": "library/client/",
+      "problemMatcher": [],
+      "label": "library/client start",
+      "detail": "react-scripts start",
+      "presentation": {
+        "group": "library start"
+      }
+    },
+    {
+      "label": "start library",
+      "dependsOn": [
+        "library/server start",
+        "library/client start"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

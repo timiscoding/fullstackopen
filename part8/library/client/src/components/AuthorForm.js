@@ -15,7 +15,7 @@ export const AuthorForm = () => {
     editAuthor({ variables: { name: author, setBornTo: parseInt(born) } });
   };
 
-  const authors = data.allAuthors || [];
+  const authors = data?.allAuthors || [];
 
   return (
     <div>
@@ -30,7 +30,9 @@ export const AuthorForm = () => {
           >
             <option value="">Choose an author</option>
             {authors.map((a) => (
-              <option value={a.name}>{a.name}</option>
+              <option key={a.name} value={a.name}>
+                {a.name}
+              </option>
             ))}
           </select>
         </div>
