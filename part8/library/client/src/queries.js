@@ -75,3 +75,18 @@ export const LOGIN = gql`
     }
   }
 `;
+
+export const RECOMMEND = gql`
+  query recommend {
+    me {
+      favoriteGenre
+    }
+    recommend {
+      title
+      author {
+        name
+      }
+      published
+    }
+  }
+`;

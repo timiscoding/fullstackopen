@@ -38,6 +38,7 @@ export const LoginForm = ({ show, setToken, setPage }) => {
             type="text"
             value={username}
             onChange={({ target }) => setUsername(target.value)}
+            autoFocus
           />
         </div>
         <div>
