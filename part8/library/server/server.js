@@ -56,6 +56,7 @@ const typeDefs = gql`
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
     me: User
+    allGenres: [String!]!
   }
 
   type Mutation {
@@ -83,7 +84,9 @@ const resolvers = {
       if (args.author) {
       }
       if (args.genre) {
-        filtered = await Book.find({ genres: { $in: [args.genre] } });
+        filtered = await Book.find({ genres: { $in: [args.genre] } }).populate(
+          "author"
+        );
       }
       return filtered;
     },
@@ -91,6 +94,7 @@ const resolvers = {
       return Author.find({});
     },
     me: (root, args, context) => context.currentUser,
+    allGenres: () => Book.distinct("genres"),
   },
   Mutation: {
     addBook: async (root, args, { currentUser }) => {
