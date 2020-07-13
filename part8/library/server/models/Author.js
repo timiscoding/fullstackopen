@@ -12,6 +12,14 @@ const schema = new mongoose.Schema({
   born: Number,
 });
 
+// use populated virtual to retrieve total books by author
+schema.virtual("bookCount", {
+  ref: "Book",
+  foreignField: "author",
+  localField: "_id",
+  count: true,
+});
+
 schema.plugin(uniqueValidator);
 
 module.exports = mongoose.model("Author", schema);

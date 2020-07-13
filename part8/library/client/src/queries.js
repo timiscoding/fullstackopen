@@ -1,4 +1,18 @@
 import { gql } from "@apollo/client";
+
+const BOOK_DETAILS = gql`
+  fragment bookDetails on Book {
+    id
+    title
+    author {
+      name
+      born
+    }
+    published
+    genres
+  }
+`;
+
 /* Apollo caching needs to store the id so that it can use it for when the query path is not enough
 to determine if 2 queries would return the same query result tree.
 
@@ -15,6 +29,7 @@ export const ALL_AUTHORS = gql`
       id
       name
       born
+      bookCount
     }
   }
 `;
@@ -22,16 +37,11 @@ export const ALL_AUTHORS = gql`
 export const ALL_BOOKS = gql`
   query allBooks($genre: String) {
     allBooks(genre: $genre) {
-      title
-      author {
-        name
-        born
-      }
-      published
-      genres
+      ...bookDetails
     }
     allGenres
   }
+  ${BOOK_DETAILS}
 `;
 
 export const ADD_BOOK = gql`
@@ -47,15 +57,10 @@ export const ADD_BOOK = gql`
       published: $published
       genres: $genres
     ) {
-      title
-      author {
-        name
-        born
-      }
-      published
-      genres
+      ...bookDetails
     }
   }
+  ${BOOK_DETAILS}
 `;
 
 export const EDIT_AUTHOR = gql`
@@ -89,4 +94,13 @@ export const RECOMMEND = gql`
       published
     }
   }
+`;
+
+export const BOOK_ADDED = gql`
+  subscription onBookAdded {
+    bookAdded {
+      ...bookDetails
+    }
+  }
+  ${BOOK_DETAILS}
 `;

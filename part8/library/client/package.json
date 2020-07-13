@@ -8,10 +8,12 @@
     "@testing-library/react": "^9.4.1",
     "@testing-library/user-event": "^7.2.1",
     "apollo-link-context": "1.0.20",
+    "apollo-link-ws": "1.0.20",
     "graphql": "15.2.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-scripts": "3.4.0"
+    "react-scripts": "3.4.0",
+    "subscriptions-transport-ws": "0.9.17"
   },
   "scripts": {
     "start": "react-scripts start",

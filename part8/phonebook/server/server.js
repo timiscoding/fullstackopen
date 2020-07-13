@@ -3,6 +3,7 @@ const {
   gql,
   UserInputError,
   AuthenticationError,
+  PubSub,
 } = require("apollo-server");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
@@ -60,6 +61,7 @@ const typeDefs = gql`
     name: String!
     phone: String
     address: Address!
+    friendOf: [User!]!
     id: ID!
   }
 
@@ -97,16 +99,23 @@ const typeDefs = gql`
     login(username: String!, password: String!): Token
     addAsFriend(name: String!): User
   }
+
+  type Subscription {
+    personAdded: Person!
+  }
 `;
 
+const pubsub = new PubSub(0);
 const resolvers = {
   Query: {
     personCount: () => Person.collection.countDocuments(),
     allPersons: (root, args) => {
       if (!args.phone) {
-        return Person.find({});
+        return Person.find({}).populate("friendOf");
       }
-      return Person.find({ phone: { $exists: args.phone === "YES" } });
+      return Person.find({ phone: { $exists: args.phone === "YES" } }).populate(
+        "friendOf"
+      );
     },
     findPerson: (root, args) => Person.findOne({ name: args.name }),
     me: (root, args, context) => context.currentUser,
@@ -132,6 +141,7 @@ const resolvers = {
           invalidArgs: args,
         });
       }
+      pubsub.publish("PERSON_ADDED", { personAdded: person });
       return person;
     },
     editNumber: async (root, args) => {
@@ -184,6 +194,11 @@ const resolvers = {
       return currentUser;
     },
   },
+  Subscription: {
+    personAdded: {
+      subscribe: () => pubsub.asyncIterator(["PERSON_ADDED"]),
+    },
+  },
 };
 
 const server = new ApolloServer({
@@ -199,6 +214,7 @@ const server = new ApolloServer({
   },
 });
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`);
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`);
 });

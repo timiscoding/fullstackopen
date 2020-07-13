@@ -3,10 +3,14 @@ import { useMutation } from "@apollo/client";
 
 import { LOGIN } from "../queries";
 
-export const LoginForm = ({ show, setToken, setPage }) => {
+export const LoginForm = ({ show, setToken, setPage, notify }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [login, result] = useMutation(LOGIN);
+  const [login, result] = useMutation(LOGIN, {
+    onError: (err) => {
+      notify(err.graphQLErrors[0].message);
+    },
+  });
 
   useEffect(() => {
     if (result.data) {

@@ -12,8 +12,16 @@
         "<node_internals>/**"
       ],
       "type": "pwa-node",
-      // "cwd":"${workspaceFolder}/phonebook/server"
+    },
+    {
+      "name": "Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/library/client/src",
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${webRoot}/*"
+      }
     }
-
   ]
 }

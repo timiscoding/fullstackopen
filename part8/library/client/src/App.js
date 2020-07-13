@@ -1,16 +1,65 @@
 import React, { useState } from "react";
-import { useApolloClient } from "@apollo/client";
-import { NewBook, Books, Authors, LoginForm, Recommend } from "./components";
+import { useApolloClient, useSubscription } from "@apollo/client";
+import {
+  Notify,
+  NewBook,
+  Books,
+  Authors,
+  LoginForm,
+  Recommend,
+} from "./components";
+import { BOOK_ADDED, ALL_BOOKS, ALL_AUTHORS } from "./queries";
 
 const App = () => {
   const [page, setPage] = useState("authors");
   const [token, setToken] = useState(null);
+  const [error, setError] = useState(null);
   const client = useApolloClient();
+
+  const updateCacheWith = (book) => {
+    const includedIn = (collection, obj) => {
+      return collection.findIndex((o) => o.id === obj.id) !== -1;
+    };
+
+    const booksInStore = client.readQuery({ query: ALL_BOOKS });
+    const authorsInStore = client.readQuery({ query: ALL_AUTHORS });
+    if (!includedIn(booksInStore.allBooks, book)) {
+      client.writeQuery({
+        query: ALL_BOOKS,
+        data: {
+          allBooks: booksInStore.allBooks.concat(book),
+        },
+      });
+    }
+    if (!includedIn(authorsInStore.allAuthors, book.author)) {
+      client.writeQuery({
+        query: ALL_AUTHORS,
+        data: {
+          allAuthors: authorsInStore.allAuthors.concat(book.author),
+        },
+      });
+    }
+  };
+
+  const { data } = useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      const book = subscriptionData.data.bookAdded;
+      notify(`Added new book ${book.title}`);
+      updateCacheWith(book);
+    },
+  });
 
   const logout = () => {
     setToken(null);
     client.resetStore();
     localStorage.clear();
+  };
+
+  const notify = (message) => {
+    setError(message);
+    setTimeout(() => {
+      setError(null);
+    }, 5000);
   };
 
   return (
@@ -30,6 +79,8 @@ const App = () => {
         )}
       </div>
 
+      <Notify message={error} />
+
       <Authors show={page === "authors"} canEdit={!!token} />
 
       <Books show={page === "books"} />
@@ -40,6 +91,7 @@ const App = () => {
         show={page === "login"}
         setToken={setToken}
         setPage={setPage}
+        notify={notify}
       />
 
       <Recommend show={page === "recommend"} />
